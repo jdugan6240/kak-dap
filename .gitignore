@@ -1,0 +1,12 @@
+.gradle
+.settings
+build
+.project
+.classpath
+bin/
+build/
+
+
+# Added by cargo
+
+/target
