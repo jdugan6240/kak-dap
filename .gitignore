@@ -5,6 +5,7 @@ build
 .classpath
 bin/
 build/
+gradle/
 
 
 # Added by cargo
