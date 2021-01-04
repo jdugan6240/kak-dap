@@ -28,11 +28,13 @@ define-command kak-debug-start %{
         callstack=$(mktemp -d "${TMPDIR:-/tmp}"/dap-callstack.XXX)
         fifo=$callstack/fifo
         mkfifo ${fifo}
+        printf "edit! -fifo ${fifo} -scroll *dap-callstack*\n"
         printf "set-option global callstack_out %s\n" "${callstack}"
         #Create the threads FIFO buffer
 	    threads=$(mktemp -d "${TMPDIR:-/tmp}"/dap-threads.XXX)
 	    fifo=$threads/fifo
 	    mkfifo ${fifo}
+	    printf "edit! -fifo ${fifo} -scroll *dap-threads*\n"
 	    printf "set-option global threads_out %s\n" "${threads}"
 	    #Start the kak-inspector jar
         ( java -jar "${kak_opt_inspect_jar}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
@@ -51,6 +53,8 @@ define-command kak-debug-stop %{
         rm -r "${kak_opt_callstack_out}"
         rm -r "${kak_opt_threads_out}"
     }
+    delete-buffer! *dap-callstack*
+    delete-buffer! *dap-threads*
 }
 
 define-command dap-set-breakpoint -params 2 %{
