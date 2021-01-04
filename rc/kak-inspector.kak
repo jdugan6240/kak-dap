@@ -1,5 +1,11 @@
+#This option dictates where the kak-inspector jar file is located.
 decl -hidden str inspect_jar %sh{ printf "%s/../build/libs/%s" "${kak_source%/*}" "kak-inspector.jar" }
+#This option indicates whether a debug session is running.
 decl -hidden bool debug_running false
+
+#These options indicate the locations of the various FIFO buffers.
+decl -hidden str callstack_out ""
+decl -hidden str threads_out ""
 
 set-face global Breakpoint red,default
 
@@ -16,12 +22,35 @@ hook global WinDisplay .* %{ eval %sh{ printf "refresh-breakpoints-flags %s" "$k
 
 add-highlighter global/ flag-lines Breakpoint breakpoints_flags
 
-define-command kak-debug %{
-    nop %sh{ ( java -jar "${kak_opt_inspect_jar}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null }
+define-command kak-debug-start %{
+    eval %sh{
+        #Create the callstack FIFO buffer
+        callstack=$(mktemp -d "${TMPDIR:-/tmp}"/dap-callstack.XXX)
+        fifo=$callstack/fifo
+        mkfifo ${fifo}
+        printf "set-option global callstack_out %s\n" "${callstack}"
+        #Create the threads FIFO buffer
+	    threads=$(mktemp -d "${TMPDIR:-/tmp}"/dap-threads.XXX)
+	    fifo=$threads/fifo
+	    mkfifo ${fifo}
+	    printf "set-option global threads_out %s\n" "${threads}"
+	    #Start the kak-inspector jar
+        ( java -jar "${kak_opt_inspect_jar}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
+	}
 }
 
 define-command kak-debug-cmd -params 1.. %{
     nop %sh{ ( java -jar "${kak_opt_inspect_jar}" -c "$@" 2>&1 & ) > /dev/null 2>&1 < /dev/null }
+}
+
+define-command kak-debug-stop %{
+    #Stop the kak-inspector jar
+    kak-debug-cmd "quit"
+    #Remove the FIFO buffers
+    nop %sh{
+        rm -r "${kak_opt_callstack_out}"
+        rm -r "${kak_opt_threads_out}"
+    }
 }
 
 define-command dap-set-breakpoint -params 2 %{
@@ -47,7 +76,7 @@ define-command dap-toggle-breakpoint %{ eval %sh{
 			exit
 		fi
 	done
-	#We don't have this breakpoint yet
+	#If we're here, we don't have this breakpoint yet
 	printf "set-option -add global breakpoints_info '%s|%s'\n" "$kak_cursor_line" "$kak_buffile"
 	printf "refresh-breakpoints-flags %s\n" "$kak_buffile"
 }}
