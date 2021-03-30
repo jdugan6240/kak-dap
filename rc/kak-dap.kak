@@ -1,7 +1,9 @@
 #This option dictates where the kak-dap binary is located.
-decl -hidden str dap_jar %sh{ printf "%s/../target/debug/%s" "${kak_source%/*}" "kak-dap" }
-#This option indicates whether a dap session is running.
+decl -hidden str dap_bin %sh{ printf "%s/../target/debug/%s" "${kak_source%/*}" "kak-dap" }
+#This option indicates whether the kak-dap binary for this session is running.
 decl -hidden bool dap_running false
+#The directory indicating where the input FIFO is located
+decl -hidden str dap_dir "/tmp/kak-dap/%val{session}"
 
 set-face global DapBreakpoint red,default
 
@@ -22,17 +24,20 @@ hook global WinDisplay .* %{
 }
 
 define-command dap-start %{ eval %sh{
+    #Create the input FIFO
+    mkdir -p $kak_opt_dap_dir
+    mkfifo "$kak_opt_dap_dir"/input_pipe
     #Start the kak-dap binary
-    ( "${kak_opt_inspect_jar}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
+    ( tail -f "$kak_opt_dap_dir"/input_pipe | "${kak_opt_dap_bin}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
 }}
 
-define-command dap-cmd -params 1.. %{
-    nop %sh{ ( java -jar "${kak_opt_inspect_jar}" -c "$@" 2>&1 & ) > /dev/null 2>&1 < /dev/null }
-}
+define-command dap-cmd -params 1..2 %{ eval %sh{
+    echo "$1 $2" > "$kak_opt_dap_dir"/input_pipe
+}}
 
 define-command dap-stop %{
     #Stop the kak-dap binary
-    dap-cmd "quit"
+    dap-cmd "stop"
 }
 
 define-command dap-set-breakpoint -params 2 %{
