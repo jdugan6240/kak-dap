@@ -2,6 +2,7 @@ extern crate clap;
 
 mod kakoune;
 mod controller;
+mod debug_adapter_comms;
 
 use clap::{Arg, App};
 
@@ -20,5 +21,7 @@ fn main() {
 
     kakoune::kak_command("set-option global dap_running true".to_string(), &session);
 
-    kakoune::start_kak_comms(session);
+    kakoune::start_kak_comms(&session);
+
+    controller::start(&session);
 }
