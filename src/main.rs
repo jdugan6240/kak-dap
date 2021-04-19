@@ -17,7 +17,7 @@ fn main() {
                 .required(true))
         .get_matches();
 
-    let session = matches.value_of("session").map(str::to_string).unwrap();
+    let session : String = matches.value_of("session").map(str::to_string).unwrap();
 
     kakoune::kak_command("set-option global dap_running true".to_string(), &session);
 

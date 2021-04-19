@@ -126,6 +126,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "crossbeam-channel",
+ "crossbeam-utils",
  "fnv",
  "json",
  "jsonrpc-core",

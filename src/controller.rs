@@ -1,5 +1,5 @@
 use std::process;
-use std::thread;
+use crossbeam_utils::thread;
 
 use crate::kakoune;
 use crate::debug_adapter_comms;
@@ -9,10 +9,13 @@ pub fn start(session: &String) {
     //Debug adapter hardcoded for now; TODO: make configurable
     let (adapter_tx, adapter_rx) = debug_adapter_comms::debug_start("node", &["~/.vscode-oss/extensions/webfreak.debug-0.25.0/out/src/lldb.js".to_string()]);
     //Event loop
-    thread::spawn(move || {
-        for msg in adapter_rx {
-            //TODO: parse and handle messages from the debug adapter
-        }
+    thread::scope(|s| {
+        s.spawn(|_| {
+            for msg in adapter_rx {
+                //TODO: parse and handle messages from the debug adapter
+                kakoune::print_debug(msg.to_string(), session);
+            }
+        });
     });
 }
 
