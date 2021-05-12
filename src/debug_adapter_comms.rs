@@ -87,6 +87,7 @@ fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Re
 fn writer_loop(mut writer: impl Write, rx: &Receiver<json::JsonValue>) -> io::Result<()> {
     for request in rx {
         let request = request.dump();
+        println!("{}", request.to_string());
         write!(
             writer,
             "Content-Length: {}\r\n\r\n{}",
