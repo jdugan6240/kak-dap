@@ -2,8 +2,9 @@ use crossbeam_channel::{bounded, Receiver, Sender};
 use fnv::FnvHashMap;
 use std::io::{self, BufRead, BufReader, BufWriter, Error, ErrorKind, Read, Write};
 use std::process::{Command, Stdio};
+//use crossbeam_utils::thread;
 use std::thread;
-use json::*;
+//use json::*;
 
 pub fn debug_start(cmd: &str, args: &[String]) -> (Sender<json::JsonValue>, Receiver<json::JsonValue>) {
     //Spawn debug adapter process and capture stdio
@@ -22,11 +23,12 @@ pub fn debug_start(cmd: &str, args: &[String]) -> (Sender<json::JsonValue>, Rece
     //Temporary way of tracing debug adapter errors
     //Print any errors to the Kakoune debug buffer
     let mut stderr = BufReader::new(child.stderr.take().expect("Failed to open stderr"));
+    //thread::spawn(move || loop {
     thread::spawn(move || loop {
         let mut buf = String::new();
         stderr.read_to_string(&mut buf).unwrap();
         if buf.is_empty() {
-            break;
+            continue;
         }
         println!("Debug adapter error: {}", buf);
     });

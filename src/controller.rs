@@ -1,25 +1,48 @@
 use std::process;
-use crossbeam_utils::thread;
+use std::thread;
+//use crossbeam_utils::thread;
 
 use crate::kakoune;
 use crate::debug_adapter_comms;
 
 pub fn start(session: &String) {
+    let kakoune_rx = kakoune::start_kak_comms();
     //Begin communication with the debug adapter
     //Debug adapter hardcoded for now; TODO: make configurable
-    let (adapter_tx, adapter_rx) = debug_adapter_comms::debug_start("node", &["~/.vscode-oss/extensions/webfreak.debug-0.25.0/out/src/lldb.js".to_string()]);
+    let (_adapter_tx, adapter_rx) = debug_adapter_comms::debug_start("python", &["/home/jdugan/debugpy/src/debugpy/adapter".to_string()]);
+
+    let my_session: String = session.clone();
+
+    thread::spawn(move || {
+        for msg in adapter_rx {
+            //TODO: parse and handle messages from the debug adapter
+            //println!("{}", msg.to_string());
+            kakoune::print_debug(&msg.to_string(), &my_session);
+        }
+    });
     //Event loop
-    thread::scope(|s| {
+    /*thread::scope(|s| {
         s.spawn(|_| {
             for msg in adapter_rx {
                 //TODO: parse and handle messages from the debug adapter
                 kakoune::print_debug(msg.to_string(), session);
             }
         });
-    });
+    });*/
+    //Main loop
+    /*for msg in kakoune_rx {
+        parse_cmd(msg, &session);
+    }*/
+    /*loop {
+        let msg = kakoune_rx.recv().unwrap();
+        parse_cmd(msg, &session);
+    }*/
+    for msg in kakoune_rx {
+        parse_cmd(msg.to_string(), &session);
+    }
 }
 
-pub fn parse_cmd(command: &String, session: &String) {
+pub fn parse_cmd(command: String, session: &String) {
     //Trim the newline from the command
     let cmd = command.trim();
 

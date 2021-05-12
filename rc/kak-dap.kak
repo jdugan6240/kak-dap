@@ -7,6 +7,12 @@ decl -hidden str dap_dir "/tmp/kak-dap/%val{session}"
 #This option indicates whether autojump is enabled.
 decl -hidden bool dap_autojump false
 
+#This option indicates the client in which the "stacktrace" buffer will be shown
+decl str stacktraceclient
+
+#This option indicates the client in which the "variables" buffer will be shown
+decl str variablesclient
+
 set-face global DapBreakpoint red,default
 set-face global DapLocation blue,default
 
@@ -32,13 +38,42 @@ hook global WinDisplay .* %{
     dap-refresh-location-flag %val{buffile}
 }
 
-define-command dap-start %{ eval %sh{
-    #Create the input FIFO
-    mkdir -p $kak_opt_dap_dir
-    mkfifo "$kak_opt_dap_dir"/input_pipe
-    #Start the kak-dap binary
-    ( tail -f "$kak_opt_dap_dir"/input_pipe | "${kak_opt_dap_bin}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
-}}
+define-command dap-setup-ui %{
+    #Setup the jump client
+    rename-client main
+    set global jumpclient main
+    
+    #Setup the stacktrace client
+    new rename-client stacktrace
+    set global stacktraceclient stacktrace
+
+    #Setup the variables client
+    new rename-client variables
+    set global variablesclient variables
+}
+
+define-command dap-takedown-ui %{
+    #Kill the stacktrace client
+    evaluate-commands -try-client %opt{stacktraceclient} %{
+        quit!
+    }
+    #Kill the variables client
+    evaluate-commands -try-client %opt{variablesclient} %{
+        quit!
+    }
+}
+
+define-command dap-start %{
+    #Setup the UI
+    dap-setup-ui
+    eval %sh{
+        #Create the input FIFO
+        mkdir -p $kak_opt_dap_dir
+        mkfifo "$kak_opt_dap_dir"/input_pipe
+        #Start the kak-dap binary
+        ( tail -f "$kak_opt_dap_dir"/input_pipe | "${kak_opt_dap_bin}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
+    }
+}
 
 define-command dap-cmd -params 1..2 %{ eval %sh{
     echo "$1 $2" > "$kak_opt_dap_dir"/input_pipe
@@ -49,6 +84,8 @@ define-command dap-stop %{
     dap-cmd "stop"
     #Reset the location flag
     dap-reset-location
+    #Takedown the UI
+    dap-takedown-ui
 }
 
 define-command dap-set-breakpoint -params 2 %{
