@@ -3,6 +3,7 @@ extern crate clap;
 mod kakoune;
 mod controller;
 mod debug_adapter_comms;
+mod context;
 
 use clap::{Arg, App};
 
@@ -22,6 +23,5 @@ fn main() {
     let session : String = matches.value_of("session").map(str::to_string).unwrap();
 
     //Set the dap_running option and kickstart the whole kit and kaboodle
-    kakoune::kak_command("set-option global dap_running true".to_string(), &session);
-    controller::start(&session);
+        controller::start(&session);
 }

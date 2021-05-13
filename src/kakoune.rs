@@ -5,10 +5,11 @@ use crossbeam_channel::{bounded, Receiver};
 use std::thread;
 
 //use crate::controller;
+use crate::context::*;
 
 //This function sends a Kakoune command to the given Kakoune session.
-pub fn kak_command(command: String, session: &String) {
-    let cmd = format!("echo {} | kak -p {}", command, session);
+pub fn kak_command(command: String, ctx: &Context) {
+    let cmd = format!("echo {} | kak -p {}", command, ctx.session);
     Command::new("sh")
         .arg("-c")
         .arg(cmd)
@@ -17,9 +18,9 @@ pub fn kak_command(command: String, session: &String) {
 }
 
 //This function prints to the Kakoune debug buffer.
-pub fn print_debug(message: &String, session: &String) {
+pub fn print_debug(message: &String, ctx: &Context) {
     let cmd = format!("echo -debug {}", message);
-    kak_command(cmd, session);
+    kak_command(cmd, ctx);
 }
 
 //This function spawns the thread that listens for commands on STDIO
