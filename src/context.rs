@@ -5,6 +5,7 @@ pub struct Context {
     pub debg_apt_tx: Sender<json::JsonValue>,
     pub cur_req_id: u64,
     pub session: String,
+    pub last_adapter_seq: u64,
 }
 
 impl Context {
@@ -12,7 +13,8 @@ impl Context {
         Context {
             debg_apt_tx: debg_apt_tx,
             cur_req_id: 0,
-            session: session
+            session: session,
+            last_adapter_seq: 0,
         }
     }
 

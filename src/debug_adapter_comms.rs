@@ -40,7 +40,7 @@ pub fn debug_start(cmd: &str, args: &[String]) -> (Sender<json::JsonValue>, Rece
 
     let (writer_tx, writer_rx): (Sender<json::JsonValue>, Receiver<json::JsonValue>) = bounded(1024);
     thread::spawn(move || {
-        writer_loop(writer, &writer_rx).expect("Failed to write message to language server");
+        writer_loop(writer, &writer_rx).expect("Failed to write message to debug adapter");
     });
 
     (writer_tx, reader_rx)
@@ -87,7 +87,7 @@ fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Re
 fn writer_loop(mut writer: impl Write, rx: &Receiver<json::JsonValue>) -> io::Result<()> {
     for request in rx {
         let request = request.dump();
-        println!("{}", request.to_string());
+        //println!("{}", request.to_string());
         write!(
             writer,
             "Content-Length: {}\r\n\r\n{}",

@@ -174,6 +174,15 @@ define-command -hidden -params 1 dap-refresh-location-flag %{
 }
 
 #
+# Responses to reverseRequests
+#
+
+define-command dap-run-in-terminal -params 1.. %{
+    terminal %arg{@}
+    dap-cmd pid
+}
+
+#
 #Responses to events
 #
 
