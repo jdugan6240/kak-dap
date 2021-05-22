@@ -2,10 +2,12 @@ use crossbeam_channel::{bounded, Receiver, Sender};
 use fnv::FnvHashMap;
 use std::io::{self, BufRead, BufReader, BufWriter, Error, ErrorKind, Read, Write};
 use std::process::{Command, Stdio};
-//use crossbeam_utils::thread;
 use std::thread;
-//use json::*;
+use json::object;
 
+use crate::context::*;
+
+//Start the debug adapter process and connect to its stdio.
 pub fn debug_start(cmd: &str, args: &[String]) -> (Sender<json::JsonValue>, Receiver<json::JsonValue>) {
     //Spawn debug adapter process and capture stdio
     let mut child = Command::new(cmd)
@@ -46,6 +48,7 @@ pub fn debug_start(cmd: &str, args: &[String]) -> (Sender<json::JsonValue>, Rece
     (writer_tx, reader_rx)
 }
 
+//Thread to read the stdout of the debug adapter process.
 fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Result<()> {
     //Store headers of message being received
     //Used to determine if Content-Length header has been received
@@ -84,10 +87,10 @@ fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Re
     }
 }
 
+//Thread to write to the stdin of the debug adapter process.
 fn writer_loop(mut writer: impl Write, rx: &Receiver<json::JsonValue>) -> io::Result<()> {
     for request in rx {
         let request = request.dump();
-        //println!("{}", request.to_string());
         write!(
             writer,
             "Content-Length: {}\r\n\r\n{}",
@@ -97,4 +100,32 @@ fn writer_loop(mut writer: impl Write, rx: &Receiver<json::JsonValue>) -> io::Re
         writer.flush()?;
     }
     Ok(())
+}
+
+//Sends a request to the debug adapter.
+pub fn do_request(cmd: String, args: json::JsonValue, ctx: &mut Context) {
+    let msg = object!{
+        "type": "request",
+        "seq": ctx.next_req_id(),
+        "command": cmd,
+        "arguments": args
+    };
+
+    //Send it to the debug adapter
+    ctx.debg_apt_tx.send(msg).expect("Failed to send initialize message to debug adapter");
+}
+
+//Sends a response to the debug adapter.
+//Currently, only one response is sent by the client: the response to the runInTerminal command.
+pub fn do_response(cmd: String, body: json::JsonValue, ctx: &mut Context) {
+    let msg = object!{
+        "type": "response",
+        "seq": ctx.next_req_id(),
+        "request_seq": ctx.last_adapter_seq,
+        "command": cmd,
+        "success": true,
+        "body": body
+    };
+    //Send it to the debug adapter
+    ctx.debg_apt_tx.send(msg).expect("Failed to send response to debug adapter");
 }

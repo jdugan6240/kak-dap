@@ -7,6 +7,7 @@ use json::object;
 use crate::kakoune;
 use crate::debug_adapter_comms;
 use crate::context::*;
+use crate::general;
 
 pub fn start(session: &String) {
     let kakoune_rx = kakoune::start_kak_comms();
@@ -39,7 +40,9 @@ pub fn start(session: &String) {
                 handle_adapter_event(msg, &mut ctx);
             }
             else if msg["type"].to_string() == "request" {
-                handle_run_in_terminal_request(msg, &mut ctx);
+                //Right now, there is only one "reverse request" - runInTerminal.
+                //Therefore, we simply handle that request.
+                general::handle_run_in_terminal_request(msg, &mut ctx);
             }
         }
     });
@@ -47,7 +50,7 @@ pub fn start(session: &String) {
     let ctx = Arc::clone(&cxt_src);
     {
         let mut ctx = ctx.lock().expect("Failed to lock context");
-        initialize(&mut ctx);
+        general::initialize(&mut ctx);
     }
     //Handle messages from Kakoune
     for msg in kakoune_rx {
@@ -60,7 +63,7 @@ pub fn start(session: &String) {
 //Handle events from the debug adapter.
 pub fn handle_adapter_event(msg: json::JsonValue, ctx: &mut Context) {
     match msg["event"].to_string().as_str() {
-        "initialized" => handle_initialized_event(msg, ctx),
+        "initialized" => general::handle_initialized_event(msg, ctx),
         _ => (),
     };
 }
@@ -68,8 +71,7 @@ pub fn handle_adapter_event(msg: json::JsonValue, ctx: &mut Context) {
 //Handle responses from the debug adapter.
 pub fn handle_adapter_response(msg: json::JsonValue, ctx: &mut Context) {
     match msg["command"].to_string().as_str() {
-        "initialize" => handle_initialize_response(msg, ctx),
-        "setBreakpoints" => handle_set_breakpoint_response(msg, ctx),
+        "initialize" => general::handle_initialize_response(msg, ctx),
         _ => (),
     };
 }
@@ -86,127 +88,35 @@ pub fn parse_cmd(command: String, ctx: &mut Context) {
     }
     else if cmd == "continue" {
         //Send a continue command to the debugger
-        let msg = object!{
-            "type": "request",
-            "seq": ctx.next_req_id(),
-            "command": "continue",
-            "arguments": {
-                "threadId": 1
-            }
+        let continue_args = object!{
+            "threadId": 1
         };
-        //Send it to the debug adapter
-        ctx.debg_apt_tx.send(msg).expect("Failed to send continue message to debug adapter");
+        debug_adapter_comms::do_request("continue".to_string(), continue_args, ctx);
     }
-    else if cmd.starts_with("pid") {
-        kakoune::print_debug(&"PID received".to_string(), ctx);
-        //let split = cmd.split(" ");
-        //let mut args = split.collect::<Vec<&str>>();
-        //let pid = args.pop().unwrap().parse::<u64>().unwrap();
-        let msg = object!{
-            "type": "response",
-            "seq": ctx.next_req_id(),
-            "request_seq": ctx.last_adapter_seq,
-            "command": "runInTerminal",
-            "success": true,
-            //"body": {
-            //    "processId": pid,
-            //}
+    else if cmd == "next" {
+        //Send a next command to the debugger
+        let next_args = object!{
+            "threadId": 1
         };
-        kakoune::print_debug(&ctx.last_adapter_seq.to_string(), ctx);
-        //println!("{}", pid);
-        //Send it to the debug adapter
-        ctx.debg_apt_tx.send(msg).expect("Failed to send response to debug adapter");
+        debug_adapter_comms::do_request("next".to_string(), next_args, ctx);
+    }
+    else if cmd == "pid" {
+        //Send response to debug adapter
+        debug_adapter_comms::do_response("runInTerminal".to_string(), object!{}, ctx);
+    }
+    else if cmd == "stepIn" {
+        //Send a stepIn command to the debugger
+        let step_in_args = object!{
+            "threadId": 1
+        };
+        debug_adapter_comms::do_request("stepIn".to_string(), step_in_args, ctx);
+    }
+    else if cmd == "stepOut" {
+        //Send a stepIn command to the debugger
+        let step_out_args = object!{
+            "threadId": 1
+        };
+        debug_adapter_comms::do_request("stepOut".to_string(), step_out_args, ctx);
     }
 }
 
-pub fn initialize(ctx: &mut Context) {
-    //Construct the initialize request
-    let msg = object!{
-        "type": "request",
-        "seq": ctx.next_req_id(),
-        "command": "initialize",
-        "arguments": {
-            "adapterID": "pydbg",
-            "linesStartAt1": true,
-            "columnsStartAt1": true,
-            "pathFormat": "path",
-            "supportsRunInTerminalRequest": true,
-        }
-    };
-    //Send it to the debug adapter
-    ctx.debg_apt_tx.send(msg).expect("Failed to send initialize message to debug adapter");
-}
-
-pub fn handle_initialized_event(msg: json::JsonValue, ctx: &mut Context) {
-    //This is where we'd set the breakpoints
-    //Breakpoints hardcoded for now; TODO: receive breakpoints from editor.
-    let break_msg = object!{
-        "type": "request",
-        "seq": ctx.next_req_id(),
-        "command": "setBreakpoints",
-        "arguments": {
-            "source": {
-                "name": "test",
-                "path": "/home/jdugan/projects/kak_plugins/kak-dap/demo/python/test.py"
-            },
-            "breakpoints": [
-                {
-                    "line": 10
-                }
-            ]
-        }
-    };
-    //Send it to the debug adapter
-    ctx.debg_apt_tx.send(break_msg).expect("Failed to send setBreakpoints message to debug adapter");
-}
-
-pub fn handle_initialize_response(msg: json::JsonValue, ctx: &mut Context) {
-    //Since debugpy uses "late case" initialization (https://github.com/microsoft/vscode/issues/4902#issuecomment-368583522),
-    //we need to send the launch request before the breakpoints.
-    let launch_msg = object!{
-        "type": "request",
-        "seq": ctx.next_req_id(),
-        "command": "launch",
-        "arguments": {
-            "program": "/home/jdugan/projects/kak_plugins/kak-dap/demo/python/test.py",
-            "args": [],
-            "stopOnEntry": true,
-            "console": "externalTerminal",
-            "debugOptions": [],
-            "cwd": "/home/jdugan/projects/kak_plugins/kak-dap/demo/python"
-        }
-    };
-    //Send it to the debug adapter
-    ctx.debg_apt_tx.send(launch_msg).expect("Failed to send initialize message to debug adapter");
-    
-}
-
-pub fn handle_set_breakpoint_response(msg: json::JsonValue, ctx: &mut Context) {
-    //For now, we will just set the one breakpoint.
-    //Now, send the configurationDone request.
-    //
-    let launch_msg = object!{
-        "type": "request",
-        "seq": ctx.next_req_id(),
-        "command": "configurationDone",
-    };
-    //Send it to the debug adapter
-    ctx.debg_apt_tx.send(launch_msg).expect("Failed to send initialize message to debug adapter");
-}
-
-pub fn handle_run_in_terminal_request(msg: json::JsonValue, ctx: &mut Context) {
-    let seq = &msg["seq"];
-    ctx.last_adapter_seq = seq.to_string().parse::<u64>().unwrap();
-    let args = &msg["arguments"]["args"];
-    println!("{}", args.to_string());
-    //Extract the program we need to run
-    let mut cmd = "dap-run-in-terminal ".to_string();
-    let args_members = args.members();
-    for val in args_members {
-        cmd.push_str("\"");
-        cmd.push_str(&val.to_string());
-        cmd.push_str("\" ");
-    }
-    println!("{}", cmd);
-    kakoune::kak_command(cmd, &ctx);
-}

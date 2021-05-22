@@ -4,6 +4,7 @@ mod kakoune;
 mod controller;
 mod debug_adapter_comms;
 mod context;
+mod general;
 
 use clap::{Arg, App};
 
@@ -23,5 +24,5 @@ fn main() {
     let session : String = matches.value_of("session").map(str::to_string).unwrap();
 
     //Set the dap_running option and kickstart the whole kit and kaboodle
-        controller::start(&session);
+    controller::start(&session);
 }

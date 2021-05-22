@@ -116,6 +116,26 @@ define-command dap-toggle-breakpoint %{ eval %sh{
     printf "dap-refresh-breakpoints-flags %s\n" "$kak_buffile"
 }}
 
+#
+# Commands sent directly to debug adapter
+#
+
+define-command dap-continue %{
+    dap-cmd continue
+}
+
+define-command dap-next %{
+    dap-cmd next
+}
+
+define-command dap-step-in %{
+    dap-cmd stepIn
+}
+
+define-command dap-step-out %{
+    dap-cmd stepOut
+}
+
 define-command dap-set-location -params 2 %{
     set-option global dap_location_info "%arg{1}|%arg{2}"
     dap-refresh-location-flag %arg{2}
@@ -177,7 +197,7 @@ define-command -hidden -params 1 dap-refresh-location-flag %{
 # Responses to reverseRequests
 #
 
-define-command dap-run-in-terminal -params 1.. %{
+define-command -hidden dap-run-in-terminal -params 1.. %{
     terminal %arg{@}
     dap-cmd pid
 }
@@ -186,7 +206,7 @@ define-command dap-run-in-terminal -params 1.. %{
 #Responses to events
 #
 
-define-command dap-stopped -params 2 %{
+define-command -hidden dap-stopped -params 2 %{
     dap-set-location %arg{1} %arg{2}
     dap-jump-to-location
 }
