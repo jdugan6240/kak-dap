@@ -1,20 +1,21 @@
 use std::io;
-use std::process::Command;
+use std::io::{Write};
+use std::process::{Command, Stdio};
 use crossbeam_channel::{bounded, Receiver};
-//use crossbeam_utils::thread;
 use std::thread;
 
-//use crate::controller;
 use crate::context::*;
 
 //This function sends a Kakoune command to the given Kakoune session.
 pub fn kak_command(command: String, ctx: &Context) {
-    let cmd = format!("echo {} | kak -p {}", command, ctx.session);
-    Command::new("sh")
-        .arg("-c")
-        .arg(cmd)
-        .output()
-        .expect("Couldn't execute command");
+    let mut child = Command::new("kak")
+        .args(&["-p", &ctx.session])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .stdout(Stdio::null())
+        .spawn().unwrap();
+    let child_stdin = child.stdin.as_mut().unwrap();
+    child_stdin.write_all(command.as_bytes()).expect("Failed to write to stdin of child process.");
 }
 
 //This function prints to the Kakoune debug buffer.

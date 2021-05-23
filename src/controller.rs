@@ -32,8 +32,6 @@ pub fn start(session: &String) {
         for msg in adapter_rx {
             let mut ctx = ctx.lock().expect("Failed to lock context");
             kakoune::print_debug(&msg.to_string(), &ctx);
-            println!("{}", &msg.to_string());
-            //TODO: parse and handle messages from the debug adapter
             if msg["type"].to_string() == "response" {
                 handle_adapter_response(msg, &mut ctx);
             }

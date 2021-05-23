@@ -201,6 +201,15 @@ define-command -hidden -params 1 dap-refresh-location-flag %{
     }
 }
 
+define-command -hidden dap-show-stacktrace -params 1 %{
+    #Show the stack trace in the stack trace buffer
+	evaluate-commands -save-regs '"' -try-client %opt[stacktraceclient] %{
+        edit! -scratch *stacktrace*
+        set-register '"' %arg{1}
+        execute-keys Pgg
+    }
+}
+
 #
 # Responses to reverseRequests
 #
@@ -214,8 +223,9 @@ define-command -hidden dap-run-in-terminal -params 1.. %{
 #Responses to debug adapter responses
 #
 
-define-command -hidden dap-stack-trace -params 2 %{
+define-command -hidden dap-stack-trace -params 3 %{
     dap-set-location %arg{1} %arg{2}
     try %{ eval -client %opt{jumpclient} dap-jump-to-location }
     try %{ eval -client %opt{jumpclient} dap-refresh-location-flag %arg{2} }
+    dap-show-stacktrace %arg{3}
 }

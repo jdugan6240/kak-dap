@@ -13,10 +13,10 @@ pub fn handle_stopped_event(_msg: json::JsonValue, ctx: &mut Context) {
     debug_adapter_comms::do_request("stackTrace".to_string(), stack_trace_args, ctx);
 }
 
+//Handles the "stackTrace" response.
 pub fn handle_stack_trace_response(msg: json::JsonValue, ctx: &mut Context) {
     let frames = &msg["body"]["stackFrames"];
-    //Only interested in first frame for now
-    //TODO: Iterate over returned stack frames to populate stack trace buffer
+    //Get first stack frame to obtain current execution location
     let frame = &frames[0];
     let line = &frame["line"];
     let file = &frame["source"]["path"];
@@ -25,5 +25,21 @@ pub fn handle_stack_trace_response(msg: json::JsonValue, ctx: &mut Context) {
     cmd.push_str(&line.to_string());
     cmd.push_str(" ");
     cmd.push_str(&file.to_string());
+    cmd.push_str(" ");
+    cmd.push_str("'Stack Trace:\n\n");
+    //Add contents to push to stacktrace buffer
+    let frame_members = frames.members();
+    for val in frame_members {
+        let id = &val["id"];
+        let name = &val["name"];
+        //Get the filename from the path (name is not guaranteed to exist)
+        let slash_index = val["source"]["path"].to_string().rfind("/").unwrap();
+        let path = &val["source"]["path"].to_string();
+        let file = path.get((slash_index + 1)..).unwrap();
+        let line = &val["line"];
+        cmd.push_str(&format!("{}: {}@{}:{}", id, name, file, line));
+        cmd.push_str("\n");
+    }
+    cmd.push_str("'");
     kakoune::kak_command(cmd, &ctx);
 }

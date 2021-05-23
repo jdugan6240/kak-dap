@@ -9,13 +9,11 @@ class TestClass(object):
   def DoSomething(self):
     for i in range(0, 100):
       if i < self._var:
-        #res = "{0} is less than the value".format(i)
-        print( '{0} is less than the value'.format( i ) )
+        print('{0} is less than the value'.format(i))
       else:
-        print( '{0} might be more'.format( i ) )
-        #res = "{0} might be more".format(i)
+        print('{0} might be more'.format(i))
 
-    raise ValueError( 'Done' )
+    raise ValueError('Done')
 
 
 def Main():
