@@ -29,11 +29,19 @@ decl -hidden str dap_location_info
 decl -hidden line-specs dap_breakpoints_flags
 decl -hidden line-specs dap_location_flags
 
+addhl shared/dap group -passes move
+addhl shared/dap/ flag-lines DapLocation dap_location_flags
+addhl shared/dap/ flag-lines DapBreakpoint dap_breakpoints_flags
+
 hook global WinDisplay .* %{
     try %{
-        addhl window/ flag-lines DapLocation dap_location_flags
-        addhl window/ flag-lines DapBreakpoint dap_breakpoints_flags
+        addhl window/dap-ref ref -passes move dap
     }
+    dap-refresh-breakpoints-flags %val{buffile}
+    dap-refresh-location-flag %val{buffile}
+}
+
+hook global BufOpenFile .* %{
     dap-refresh-breakpoints-flags %val{buffile}
     dap-refresh-location-flag %val{buffile}
 }
@@ -203,10 +211,11 @@ define-command -hidden dap-run-in-terminal -params 1.. %{
 }
 
 #
-#Responses to events
+#Responses to debug adapter responses
 #
 
-define-command -hidden dap-stopped -params 2 %{
+define-command -hidden dap-stack-trace -params 2 %{
     dap-set-location %arg{1} %arg{2}
-    dap-jump-to-location
+    try %{ eval -client %opt{jumpclient} dap-jump-to-location }
+    try %{ eval -client %opt{jumpclient} dap-refresh-location-flag %arg{2} }
 }

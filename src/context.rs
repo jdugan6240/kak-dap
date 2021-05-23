@@ -6,6 +6,7 @@ pub struct Context {
     pub cur_req_id: u64,
     pub session: String,
     pub last_adapter_seq: u64,
+    pub cur_thread: u64,
 }
 
 impl Context {
@@ -15,6 +16,7 @@ impl Context {
             cur_req_id: 0,
             session: session,
             last_adapter_seq: 0,
+            cur_thread: 0,
         }
     }
 

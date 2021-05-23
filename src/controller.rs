@@ -8,6 +8,7 @@ use crate::kakoune;
 use crate::debug_adapter_comms;
 use crate::context::*;
 use crate::general;
+use crate::stack_trace;
 
 pub fn start(session: &String) {
     let kakoune_rx = kakoune::start_kak_comms();
@@ -64,6 +65,7 @@ pub fn start(session: &String) {
 pub fn handle_adapter_event(msg: json::JsonValue, ctx: &mut Context) {
     match msg["event"].to_string().as_str() {
         "initialized" => general::handle_initialized_event(msg, ctx),
+        "stopped" => stack_trace::handle_stopped_event(msg, ctx),
         _ => (),
     };
 }
@@ -72,6 +74,7 @@ pub fn handle_adapter_event(msg: json::JsonValue, ctx: &mut Context) {
 pub fn handle_adapter_response(msg: json::JsonValue, ctx: &mut Context) {
     match msg["command"].to_string().as_str() {
         "initialize" => general::handle_initialize_response(msg, ctx),
+        "stackTrace" => stack_trace::handle_stack_trace_response(msg, ctx),
         _ => (),
     };
 }

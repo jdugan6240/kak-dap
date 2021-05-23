@@ -37,7 +37,5 @@ pub fn start_kak_comms() -> Receiver<String> {
     });
 
     reader_rx
-
 }
-
 
