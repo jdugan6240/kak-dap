@@ -20,7 +20,7 @@ pub fn kak_command(command: String, ctx: &Context) {
 
 //This function prints to the Kakoune debug buffer.
 pub fn print_debug(message: &String, ctx: &Context) {
-    let cmd = format!("echo -debug {}", message);
+    let cmd = format!("echo -debug '{}'", message);
     kak_command(cmd, ctx);
 }
 

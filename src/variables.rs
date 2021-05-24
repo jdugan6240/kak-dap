@@ -31,6 +31,9 @@ pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
             icon = "+";
         }
         cmd.push_str(icon);
+        cmd.push_str("<");
+        cmd.push_str(&val["variablesReference"].to_string());
+        cmd.push_str(">");
         cmd.push_str(" ");
         cmd.push_str(&val["name"].to_string());
         cmd.push_str(" (");
@@ -40,4 +43,18 @@ pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
         cmd.push_str("\n'");
         kakoune::kak_command(cmd, ctx);
     }
+}
+
+//Handles the "expand" command from the editor.
+pub fn expand_variable(cmd: &String, ctx: &mut Context) {
+    let var = cmd[7..].to_string();
+    let var_num = var.trim().to_string().parse::<u64>().unwrap();
+    //The resulting value is the variable reference
+    //Now, run a variables request to get the resulting variable
+    //kakoune::print_debug(&var.to_string(), ctx);
+    let var_args = object!{
+        "variablesReference": var_num,
+    };
+    debug_adapter_comms::do_request("variables".to_string(), var_args, ctx);
+
 }

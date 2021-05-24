@@ -201,6 +201,10 @@ define-command -hidden -params 1 dap-refresh-location-flag %{
     }
 }
 
+#
+#Handle the variable/stacktrace buffers
+#
+
 define-command -hidden dap-show-stacktrace -params 1 %{
     #Show the stack trace in the stack trace buffer
 	evaluate-commands -save-regs '"' -try-client %opt[stacktraceclient] %{
@@ -213,17 +217,32 @@ define-command -hidden dap-show-stacktrace -params 1 %{
 define-command -hidden dap-clear-variables %{
     evaluate-commands -save-regs '"' -try-client %opt[variablesclient] %{
         edit! -scratch *variables*
-        set-register '"' 'Variables:'
-        execute-keys P
-        set-register '"' ''
-        execute-keys p
+        set-register '"' "Variables:"
+        execute-keys Po<esc>gj
+        map buffer normal '<ret>' ':<space>dap-expand-variable<ret>'
     }
 }
 
 define-command -hidden dap-add-variable -params 1 %{
     evaluate-commands -save-regs '"' -try-client %opt[variablesclient] %{
         set-register '"' %arg{1}
-        execute-keys p
+        execute-keys pjglo<esc>
+    }
+}
+
+define-command -hidden dap-expand-variable %{
+    evaluate-commands -save-regs '' -try-client %opt[variablesclient] %{
+        #Get variable we're expanding
+        execute-keys -save-regs '' "ghww"
+        set-register t %val{selection}
+        #For now, we aren't checking if this value starts with a "+".
+        #TODO: only expand if value starts with a "+".
+        execute-keys -save-regs '' "ghc<space><esc>"
+        execute-keys -save-regs '' "o{<ret>}<esc>kgl"
+        evaluate-commands %sh{
+            value="${kak_reg_t}"
+            printf "dap-cmd expand \"%s\"\n" $value
+        }
     }
 }
 
