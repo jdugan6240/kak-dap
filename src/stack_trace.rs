@@ -42,4 +42,10 @@ pub fn handle_stack_trace_response(msg: json::JsonValue, ctx: &mut Context) {
     }
     cmd.push_str("'");
     kakoune::kak_command(cmd, &ctx);
+    //Send a Scopes message to kickstart retrieving the variables
+    let id = frames[0]["id"].to_string().parse::<u64>().unwrap();
+    let scopes_args = object!{
+        "frameId": id,
+    };
+    debug_adapter_comms::do_request("scopes".to_string(), scopes_args, ctx);
 }

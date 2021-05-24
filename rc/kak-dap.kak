@@ -210,6 +210,23 @@ define-command -hidden dap-show-stacktrace -params 1 %{
     }
 }
 
+define-command -hidden dap-clear-variables %{
+    evaluate-commands -save-regs '"' -try-client %opt[variablesclient] %{
+        edit! -scratch *variables*
+        set-register '"' 'Variables:'
+        execute-keys P
+        set-register '"' ''
+        execute-keys p
+    }
+}
+
+define-command -hidden dap-add-variable -params 1 %{
+    evaluate-commands -save-regs '"' -try-client %opt[variablesclient] %{
+        set-register '"' %arg{1}
+        execute-keys p
+    }
+}
+
 #
 # Responses to reverseRequests
 #

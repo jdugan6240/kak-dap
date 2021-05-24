@@ -6,6 +6,7 @@ mod debug_adapter_comms;
 mod context;
 mod general;
 mod stack_trace;
+mod variables;
 
 use clap::{Arg, App};
 
