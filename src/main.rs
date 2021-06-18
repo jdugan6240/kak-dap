@@ -7,6 +7,7 @@ mod context;
 mod general;
 mod stack_trace;
 mod variables;
+mod types;
 
 use clap::{Arg, App};
 

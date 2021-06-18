@@ -146,12 +146,12 @@ define-command dap-step-out %{
 
 define-command dap-set-location -params 2 %{
     set-option global dap_location_info "%arg{1}|%arg{2}"
-    dap-refresh-location-flag %arg{2}
+    try %{ eval -client %opt{jumpclient} dap-refresh-location-flag %arg{2} }
 }
 
 define-command dap-reset-location %{
     set-option global dap_location_info ""
-    dap-refresh-location-flag %val{buffile}
+    try %{ eval -client %opt{jumpclient} dap-refresh-location-flag %val{buffile} }
 }
 
 define-command dap-jump-to-location %{
@@ -214,35 +214,17 @@ define-command -hidden dap-show-stacktrace -params 1 %{
     }
 }
 
-define-command -hidden dap-clear-variables %{
+define-command -hidden dap-show-variables -params 1 %{
     evaluate-commands -save-regs '"' -try-client %opt[variablesclient] %{
         edit! -scratch *variables*
-        set-register '"' "Variables:"
-        execute-keys Po<esc>gj
-        map buffer normal '<ret>' ':<space>dap-expand-variable<ret>'
-    }
-}
-
-define-command -hidden dap-add-variable -params 1 %{
-    evaluate-commands -save-regs '"' -try-client %opt[variablesclient] %{
         set-register '"' %arg{1}
-        execute-keys pjglo<esc>
+        execute-keys Pgg
     }
 }
 
 define-command -hidden dap-expand-variable %{
-    evaluate-commands -save-regs '' -try-client %opt[variablesclient] %{
-        #Get variable we're expanding
-        execute-keys -save-regs '' "ghww"
-        set-register t %val{selection}
-        #For now, we aren't checking if this value starts with a "+".
-        #TODO: only expand if value starts with a "+".
-        execute-keys -save-regs '' "ghc<space><esc>"
-        execute-keys -save-regs '' "o{<ret>}<esc>kgl"
-        evaluate-commands %sh{
-            value="${kak_reg_t}"
-            printf "dap-cmd expand \"%s\"\n" $value
-        }
+    evaluate-commands -try-client %opt{variablesclient} %{
+        dap-cmd expand %val{kak_cursor_line}
     }
 }
 
@@ -262,6 +244,5 @@ define-command -hidden dap-run-in-terminal -params 1.. %{
 define-command -hidden dap-stack-trace -params 3 %{
     dap-set-location %arg{1} %arg{2}
     try %{ eval -client %opt{jumpclient} dap-jump-to-location }
-    try %{ eval -client %opt{jumpclient} dap-refresh-location-flag %arg{2} }
     dap-show-stacktrace %arg{3}
 }
