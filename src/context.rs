@@ -18,6 +18,8 @@ pub struct Context {
     pub scopes: Vec<Expandable>,
     //The number of Variables requests we still need to service
     pub var_reqs: u64,
+    //The current stack frame.
+    pub cur_stack: u64,
 }
 
 impl Context {
@@ -30,6 +32,7 @@ impl Context {
             cur_thread: 0,
             scopes: vec![],
             var_reqs: 0,
+            cur_stack: 0,
         }
     }
 

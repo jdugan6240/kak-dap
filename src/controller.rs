@@ -76,6 +76,7 @@ pub fn handle_adapter_response(msg: json::JsonValue, ctx: &mut Context) {
         "stackTrace" => stack_trace::handle_stack_trace_response(msg, ctx),
         "scopes" => variables::handle_scopes_response(msg, ctx),
         "variables" => variables::handle_variables_response(msg, ctx),
+        "evaluate" => general::handle_evaluate_response(msg, ctx),
         _ => (),
     };
 }
@@ -122,6 +123,15 @@ pub fn parse_cmd(command: String, ctx: &mut Context) {
             "threadId": 1
         };
         debug_adapter_comms::do_request("stepOut".to_string(), step_out_args, ctx);
+    }
+    else if cmd.starts_with("evaluate") {
+        //Extract the expression and send an "evaluate" command to the debugger
+        let expr = cmd[9..].to_string();
+        let eval_args = object!{
+            "expression": expr,
+            "frameId": ctx.cur_stack
+        };
+        debug_adapter_comms::do_request("evaluate".to_string(), eval_args, ctx);
     }
     else if cmd.starts_with("expand") {
         variables::expand_variable(&command, ctx);

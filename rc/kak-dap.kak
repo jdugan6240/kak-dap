@@ -144,6 +144,10 @@ define-command dap-step-out %{
     dap-cmd stepOut
 }
 
+define-command dap-evaluate -params 1 %{
+    dap-cmd evaluate %arg{1}
+}
+
 define-command dap-set-location -params 2 %{
     set-option global dap_location_info "%arg{1}|%arg{2}"
     try %{ eval -client %opt{jumpclient} dap-refresh-location-flag %arg{2} }
@@ -245,4 +249,8 @@ define-command -hidden dap-stack-trace -params 3 %{
     dap-set-location %arg{1} %arg{2}
     try %{ eval -client %opt{jumpclient} dap-jump-to-location }
     dap-show-stacktrace %arg{3}
+}
+
+define-command -hidden dap-evaluate-response -params 2 %{
+    try %{ eval -client %opt{jumpclient} %{info "%arg{1}: %arg{2}"} }
 }

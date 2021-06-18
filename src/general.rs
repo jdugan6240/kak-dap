@@ -69,3 +69,17 @@ pub fn handle_run_in_terminal_request(msg: json::JsonValue, ctx: &mut Context) {
     }
     kakoune::kak_command(cmd, &ctx);
 }
+
+//Handles the "evaluate" response.
+pub fn handle_evaluate_response(msg: json::JsonValue, ctx: &mut Context) {
+    //Get the result and type
+    let result = &msg["body"]["result"];
+    let typ = &msg["body"]["type"];
+    
+    //Send it to Kakoune for processing
+    let mut cmd = "dap-evaluate-response ".to_string();
+    cmd.push_str(&result.to_string());
+    cmd.push_str(" ");
+    cmd.push_str(&typ.to_string());
+    kakoune::kak_command(cmd, &ctx);
+}

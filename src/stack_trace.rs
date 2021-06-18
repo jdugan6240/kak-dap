@@ -44,6 +44,7 @@ pub fn handle_stack_trace_response(msg: json::JsonValue, ctx: &mut Context) {
     kakoune::kak_command(cmd, &ctx);
     //Send a Scopes message to kickstart retrieving the variables
     let id = frames[0]["id"].to_string().parse::<u64>().unwrap();
+    ctx.cur_stack = id;
     let scopes_args = object!{
         "frameId": id,
     };
