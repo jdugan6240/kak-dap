@@ -34,7 +34,11 @@ pub fn start(session: &String) {
             let mut ctx = ctx.lock().expect("Failed to lock context");
             kakoune::print_debug(&msg.to_string(), &ctx);
             if msg["type"].to_string() == "response" {
-                handle_adapter_response(msg, &mut ctx);
+                let msg_cln = msg.clone();
+                let ctx_cln = &mut ctx;
+                handle_adapter_response(msg, ctx_cln);
+                //Find the request that spawned this response and remove it from the pending requests
+                ctx_cln.cur_requests.retain(|x| &x["seq"] != &msg_cln["request_seq"]);
             }
             else if msg["type"].to_string() == "event" {
                 handle_adapter_event(msg, &mut ctx);

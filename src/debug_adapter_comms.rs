@@ -111,8 +111,13 @@ pub fn do_request(cmd: String, args: json::JsonValue, ctx: &mut Context) {
         "arguments": args
     };
 
+    let msg_cln = msg.clone();
+
     //Send it to the debug adapter
     ctx.debg_apt_tx.send(msg).expect("Failed to send initialize message to debug adapter");
+
+    //Add it to the pending requests list
+    ctx.cur_requests.push(msg_cln);
 }
 
 //Sends a response to the debug adapter.

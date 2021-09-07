@@ -20,6 +20,8 @@ pub struct Context {
     pub var_reqs: u64,
     //The current stack frame.
     pub cur_stack: u64,
+    //The requests we have sent to the adapter
+    pub cur_requests: Vec<json::JsonValue>
 }
 
 impl Context {
@@ -33,6 +35,7 @@ impl Context {
             scopes: vec![],
             var_reqs: 0,
             cur_stack: 0,
+            cur_requests: vec![]
         }
     }
 
