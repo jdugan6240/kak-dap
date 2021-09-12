@@ -1,6 +1,6 @@
 use crossbeam_channel::Sender;
 
-use crate::types::Expandable;
+use crate::types::{Scope,Variable};
 
 //Struct with which to carry around our "global" variables
 pub struct Context {
@@ -15,7 +15,9 @@ pub struct Context {
     //The thread that last triggered the Stopped event
     pub cur_thread: u64,
     //The scopes found at the last Stopped event
-    pub scopes: Vec<Expandable>,
+    pub scopes: Vec<Scope>,
+    //The variables currently stored in the variable heirarchy
+    pub variables: Vec<Variable>,
     //The number of Variables requests we still need to service
     pub var_reqs: u64,
     //The current stack frame.
@@ -33,6 +35,7 @@ impl Context {
             last_adapter_seq: 0,
             cur_thread: 0,
             scopes: vec![],
+            variables: vec![],
             var_reqs: 0,
             cur_stack: 0,
             cur_requests: vec![]

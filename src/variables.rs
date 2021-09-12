@@ -1,7 +1,7 @@
 use crate::context::*;
 use crate::debug_adapter_comms;
 use crate::kakoune;
-use crate::types::Expandable;
+use crate::types::{Scope,Variable};
 
 use json::object;
 
@@ -13,11 +13,9 @@ pub fn handle_scopes_response(msg: json::JsonValue, ctx: &mut Context) {
     for val in scopes_members {
         let value = val.clone();
         //Enter this scope in the scopes array
-        let scope = Expandable {
+        let scope = Scope {
             variable_reference: val["variablesReference"].to_string().parse::<u64>().unwrap(),
-            variables: vec![],
             line_no: 0,
-            is_var: false,
             contents: value,
         };
         ctx.scopes.push(scope);
@@ -32,12 +30,12 @@ pub fn handle_scopes_response(msg: json::JsonValue, ctx: &mut Context) {
 }
 
 //Get the string that represents the contents to place in the Variables buffer
-pub fn serialize_variables(vars: &Vec<Expandable>, indent: u64) -> String {
+/*pub fn serialize_variables(vars: &Vec<Expandable>, indent: u64) -> String {
     let mut value = "".to_owned();
     //Loop through every expandable in the list
     for val in vars.iter() {
         //Add whitespace to match indent
-        for n in 1..indent {
+        for _n in 1..indent {
             value.push_str(" ");
         }
         let contents = &val.contents;
@@ -61,15 +59,31 @@ pub fn serialize_variables(vars: &Vec<Expandable>, indent: u64) -> String {
         }
     }
     value
-}
+}*/
 
 //Handles the "variables" response.
 pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
     ctx.var_reqs -= 1;
+    //Find the variables request that spawned this response
+    let cur_requests = &ctx.cur_requests.clone();
+    let val_req = cur_requests.into_iter().find(|x| &x["seq"] == &msg["request_seq"]).unwrap();
+
     //Print every variable in the variables buffer
     let variables = &msg["body"]["variables"];
     let variables_members = variables.members();
     for val in variables_members {
+        let val_cln = val.clone();
+        //Construct an Expandable instance containing this variable's properties
+        let variable = Variable {
+            variable_reference: val["variablesReference"].to_string().parse::<u64>().unwrap(),
+            par_variable_reference: msg["arguments"]["variablesReference"].to_string().parse::<u64>().unwrap(),
+            line_no: 0,
+            contents: val_cln,
+        };
+        //kakoune::print_debug(&val_req[.unwrap()["variablesReference"].to_string(), &ctx);
+        //kakoune::print_debug(&val_req.unwrap().to_string(), &ctx);
+        //Find the variable in the current heirarchy that has this variable reference
+        
         /*let mut cmd = "dap-add-variable '".to_string();
         let mut icon = " ";
         if val["variablesReference"].to_string().parse::<u64>().unwrap() > 0 {
