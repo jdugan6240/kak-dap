@@ -78,8 +78,9 @@ define-command dap-start %{
         #Create the input FIFO
         mkdir -p $kak_opt_dap_dir
         mkfifo "$kak_opt_dap_dir"/input_pipe
+        export kakoune_session=$kak_session
         #Start the kak-dap binary
-        ( tail -f "$kak_opt_dap_dir"/input_pipe | "${kak_opt_dap_bin}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
+        ( tail -f "$kak_opt_dap_dir"/input_pipe | "${kak_opt_dap_bin}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
     }
 }
 

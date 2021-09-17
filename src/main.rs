@@ -10,22 +10,23 @@ mod variables;
 mod types;
 
 use clap::{Arg, App};
+use std::env;
 
 fn main() {
     //Get command line arguments
-    let matches = App::new("Kak-DAP")
+    let _matches = App::new("Kak-DAP")
         .version("0.1.0")
-        .arg(Arg::with_name("session")
-                .short("s")
-                .long("session")
-                .value_name("SESSION")
-                .help("Kakoune session to debug in")
-                .required(true))
         .get_matches();
 
     //Extract the current session
-    let session : String = matches.value_of("session").map(str::to_string).unwrap();
-
-    //Set the dap_running option and kickstart the whole kit and kaboodle
-    controller::start(&session);
+    let session;
+    match env::var("kakoune_session") {
+        Ok(val) => session = val,
+        Err(_e) => session = "none".to_string(),
+    }
+    println!("{}", session);
+    //If we have a valid session, set the dap_running option and kickstart the whole kit and kaboodle
+    if session != "none" {
+        controller::start(&session);
+    }
 }
