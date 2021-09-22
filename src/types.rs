@@ -7,6 +7,7 @@ pub struct Scope {
     pub contents: json::JsonValue,
 }
 
+#[derive(Debug)]
 pub struct Variable {
     //If nonzero, this can be expanded
     pub variable_reference: u64,

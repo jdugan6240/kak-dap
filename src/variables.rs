@@ -1,6 +1,7 @@
 use crate::context::*;
 use crate::debug_adapter_comms;
 use crate::types::{Scope,Variable};
+use crate::kakoune;
 
 use json::object;
 
@@ -47,7 +48,26 @@ pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
             line_no: 0,
             contents: val_cln,
         };
+        ctx.variables.push(variable);
     }
+    kakoune::print_debug(&format!("{:#?}", &ctx.variables), &ctx);
+    // If we've serviced all pending variable requests, render the 
+    if ctx.var_reqs == 0 {
+        serialize_variables(ctx);
+    }
+}
+
+pub fn serialize_variables(ctx: &mut Context) {
+    //kakoune::kak_command("dap-clear-variables".to_string(), &ctx);
+    let mut cmd = "dap-show-variables 'Variables:\n\n".to_string();
+    for scope in &ctx.scopes {
+        let scope_name = &scope.contents["name"];
+        cmd.push_str(&"Scope: ".to_string());
+        cmd.push_str(&scope_name.to_string());
+        cmd.push_str("\n");
+    }
+    cmd.push_str("'");
+    kakoune::kak_command(cmd, ctx);
 }
 
 //Handles the "expand" command from the editor.
