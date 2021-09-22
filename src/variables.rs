@@ -9,6 +9,7 @@ use json::object;
 pub fn handle_scopes_response(msg: json::JsonValue, ctx: &mut Context) {
     //Update the "scopes" array in the context
     ctx.scopes.clear();
+    ctx.variables.clear();
     let scopes_members = msg["body"]["scopes"].members();
     for val in scopes_members {
         let value = val.clone();
@@ -65,9 +66,39 @@ pub fn serialize_variables(ctx: &mut Context) {
         cmd.push_str(&"Scope: ".to_string());
         cmd.push_str(&scope_name.to_string());
         cmd.push_str("\n");
+        // First confirm that this scope has child variables
+        let mut has_child = false;
+        for var in &ctx.variables {
+            if var.par_variable_reference == scope.variable_reference {
+                has_child = true;
+                break;
+            }
+        }
+        if has_child {
+            let val = serialize_variable(ctx, scope.variable_reference, 4);
+            cmd.push_str(&val);
+        }
     }
     cmd.push_str("'");
     kakoune::kak_command(cmd, ctx);
+}
+
+pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
+    let mut val = "".to_string();
+    for var in &ctx.variables {
+        if var.par_variable_reference == par_ref {
+            for _i in 0..indent {
+                val.push_str(" ");
+            }
+            val.push_str(&var.contents["name"].to_string());
+            val.push_str(" (");
+            val.push_str(&var.contents["type"].to_string());
+            val.push_str("): ");
+            val.push_str(&var.contents["value"].to_string());
+            val.push_str("\n");
+        }
+    }
+    val
 }
 
 //Handles the "expand" command from the editor.
