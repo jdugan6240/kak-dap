@@ -37,7 +37,7 @@ pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
     let cur_requests = &ctx.cur_requests.clone();
     let val_req = cur_requests.into_iter().find(|x| &x["seq"] == &msg["request_seq"]).unwrap();
 
-    //Print every variable in the variables buffer
+    //Loop over every variable in this response
     let variables = &msg["body"]["variables"];
     let variables_members = variables.members();
     for val in variables_members {
@@ -51,15 +51,14 @@ pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
         };
         ctx.variables.push(variable);
     }
-    kakoune::print_debug(&format!("{:#?}", &ctx.variables), &ctx);
-    // If we've serviced all pending variable requests, render the 
+    // If we've serviced all pending variable requests, render the scopes and variables in the variables buffer
     if ctx.var_reqs == 0 {
         serialize_variables(ctx);
     }
 }
 
+//Constructs the command that renders all the scopes and variables in the variables buffer.
 pub fn serialize_variables(ctx: &mut Context) {
-    //kakoune::kak_command("dap-clear-variables".to_string(), &ctx);
     let mut cmd = "dap-show-variables 'Variables:\n\n".to_string();
     for scope in &ctx.scopes {
         let scope_name = &scope.contents["name"];
@@ -83,6 +82,7 @@ pub fn serialize_variables(ctx: &mut Context) {
     kakoune::kak_command(cmd, ctx);
 }
 
+//Constructs the command that renders all the child variables of the given variable reference in the variables buffer.
 pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
     let mut val = "".to_string();
     for var in &ctx.variables {
@@ -90,12 +90,30 @@ pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
             for _i in 0..indent {
                 val.push_str(" ");
             }
+            //If this variable is expandable
+            if var.variable_reference > 0 {
+                let mut icon = "+";
+                //Determine if this variable has any child variables currently
+                for varr in &ctx.variables {
+                    if varr.par_variable_reference == var.variable_reference {
+                        icon = "-";
+                        break;
+                    }
+                }
+                val.push_str(&format!("{} ", icon));
+            }
+            val.push_str("<");
+            val.push_str(&var.variable_reference.to_string());
+            val.push_str("> ");
             val.push_str(&var.contents["name"].to_string());
             val.push_str(" (");
             val.push_str(&var.contents["type"].to_string());
             val.push_str("): ");
             val.push_str(&var.contents["value"].to_string());
             val.push_str("\n");
+            if var.variable_reference > 0 {
+                val.push_str(&serialize_variable(ctx, var.variable_reference, indent + 4));
+            }
         }
     }
     val
