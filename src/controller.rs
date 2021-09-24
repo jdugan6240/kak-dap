@@ -87,7 +87,6 @@ pub fn handle_adapter_response(msg: json::JsonValue, ctx: &mut Context) {
 
 //Handle commands from Kakoune.
 pub fn parse_cmd(command: String, ctx: &mut Context) {
-    //kakoune::print_debug(&command, ctx);
     //Trim the newline from the command
     let cmd = command.trim();
 

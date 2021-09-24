@@ -121,5 +121,37 @@ pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
 
 //Handles the "expand" command from the editor.
 pub fn expand_variable(cmd: &String, ctx: &mut Context) {
-    //TODO: implement.
+    let mut var = cmd[7..].to_string();
+    var = var.trim().to_string();
+    //If the string starts with a '<', this is an expandable variable
+    let first_char = var.chars().next().unwrap();
+    if first_char == '<' {
+        kakoune::print_debug(&"Expandable".to_string(), ctx);
+        //Extract the variable reference
+        var = var[1..].to_string();
+        let var_ref = var.parse::<u64>().unwrap();
+        //If the variables list contains any child variables of this variable reference, then it's expanded
+        let mut is_expanded = false;
+        for varr in &ctx.variables {
+            if varr.par_variable_reference == var_ref {
+                is_expanded = true;
+                break;
+            }
+        }
+        //If this variable isn't expanded, then expand it
+        if !is_expanded {
+            kakoune::print_debug(&"Expand".to_string(), ctx);
+            let var_args = object!{
+                "variablesReference": var_ref
+            };
+            ctx.var_reqs += 1;
+            debug_adapter_comms::do_request("variables".to_string(), var_args, ctx);
+        }
+        //Otherwise, collapse it
+        else {
+            kakoune::print_debug(&"Collapse".to_string(), ctx);
+            &ctx.variables.retain(|x| x.par_variable_reference != var_ref);
+            serialize_variables(ctx);
+        }
+    }
 }

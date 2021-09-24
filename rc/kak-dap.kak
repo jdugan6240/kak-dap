@@ -224,12 +224,19 @@ define-command -hidden dap-show-variables -params 1 %{
         edit! -scratch *variables*
         set-register '"' %arg{1}
         execute-keys Pgg
+        map buffer normal '<ret>' ':<space>dap-expand-variable<ret>'
     }
 }
 
 define-command -hidden dap-expand-variable %{
     evaluate-commands -try-client %opt{variablesclient} %{
-        dap-cmd expand %val{kak_cursor_line}
+ 		#Get variable we're expanding
+        execute-keys -save-regs '' "ghwwwW"
+        set-register t %val{selection}
+        evaluate-commands %sh{
+            value="${kak_reg_t}"
+            printf "dap-cmd expand \"%s\"\n" $value
+        }
     }
 }
 
