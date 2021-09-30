@@ -10,8 +10,4 @@ edition = "2018"
 clap = "2.33.0"
 json = "0.12.4"
 fnv="1"
-jsonrpc-core = "8"
 crossbeam-channel = "0.5"
-crossbeam-utils = "0.8"
-
-

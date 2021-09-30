@@ -60,11 +60,12 @@ pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
 //Constructs the command that renders all the scopes and variables in the variables buffer.
 pub fn serialize_variables(ctx: &mut Context) {
     let mut cmd = "dap-show-variables 'Variables:\n\n".to_string();
+    let mut cmd_val = "".to_string();
     for scope in &ctx.scopes {
         let scope_name = &scope.contents["name"];
-        cmd.push_str(&"Scope: ".to_string());
-        cmd.push_str(&scope_name.to_string());
-        cmd.push_str("\n");
+        cmd_val.push_str(&"Scope: ".to_string());
+        cmd_val.push_str(&scope_name.to_string());
+        cmd_val.push_str("\n");
         // First confirm that this scope has child variables
         let mut has_child = false;
         for var in &ctx.variables {
@@ -75,9 +76,10 @@ pub fn serialize_variables(ctx: &mut Context) {
         }
         if has_child {
             let val = serialize_variable(ctx, scope.variable_reference, 4);
-            cmd.push_str(&val);
+            cmd_val.push_str(&val);
         }
     }
+    cmd.push_str(&kakoune::editor_escape(&cmd_val));
     cmd.push_str("'");
     kakoune::kak_command(cmd, ctx);
 }
@@ -126,7 +128,6 @@ pub fn expand_variable(cmd: &String, ctx: &mut Context) {
     //If the string starts with a '<', this is an expandable variable
     let first_char = var.chars().next().unwrap();
     if first_char == '<' {
-        kakoune::print_debug(&"Expandable".to_string(), ctx);
         //Extract the variable reference
         var = var[1..].to_string();
         let var_ref = var.parse::<u64>().unwrap();
@@ -140,7 +141,6 @@ pub fn expand_variable(cmd: &String, ctx: &mut Context) {
         }
         //If this variable isn't expanded, then expand it
         if !is_expanded {
-            kakoune::print_debug(&"Expand".to_string(), ctx);
             let var_args = object!{
                 "variablesReference": var_ref
             };
@@ -149,8 +149,7 @@ pub fn expand_variable(cmd: &String, ctx: &mut Context) {
         }
         //Otherwise, collapse it
         else {
-            kakoune::print_debug(&"Collapse".to_string(), ctx);
-            &ctx.variables.retain(|x| x.par_variable_reference != var_ref);
+            ctx.variables.retain(|x| x.par_variable_reference != var_ref);
             serialize_variables(ctx);
         }
     }

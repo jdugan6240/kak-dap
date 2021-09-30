@@ -24,6 +24,11 @@ pub fn print_debug(message: &String, ctx: &Context) {
     kak_command(cmd, ctx);
 }
 
+/// Escape Kakoune string wrapped into single quote
+pub fn editor_escape(s: &str) -> String {
+    s.replace("'", "''")
+}
+
 //This function spawns the thread that listens for commands on STDIO
 //and issues commands to the Kakoune session that spawned us.
 pub fn start_kak_comms() -> Receiver<String> {
