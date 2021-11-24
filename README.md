@@ -15,13 +15,62 @@ This allows Kakoune to support debugging in a variety of different languages, pr
 - Heirarchical variable display
 - Arbitrary expression evaluation
 
+## Install
+
+### Plug.kak
+
+If using `plug.kak` as your plugin manager, add the following to your kakrc:
+
+```
+plug "https://codeberg.org/jdugan6240/kak-dap" do %{
+  cargo install --locked --force --path .
+}
+```
+
+### kak-bundle
+
+If using `kak-bundle` as your plugin manager, add the following to your kakrc:
+
+```
+# The below two options may already be set if you use a plugin like kak-lsp
+# In this case, just update bundle_install_hooks to include compiling kak-dap
+set-option global bundle_do_install_hooks true
+set-option global bundle_install_hooks %{
+  cd ${kak_opt_bundle_path}/kak-dap/
+  cargo install --locked --force --path .
+}
+bundle "https://codeberg.org/jdugan6240/kak-dap"
+
+bundle-load # Don't include this if you already have this in your kakrc
+```
+
+### Manual
+
+If not using a plugin manager, clone the repository anywhere on your system:
+
+```
+git clone https://codeberg.org/jdugan6240/kak-dap
+cd <repository_dir>
+cargo install --locked --force --path .
+```
+
+where <repository_dir> is the directory you cloned the repository to.
+
+Then, add the following to your kakrc:
+
+```
+source <repository_dir>/rc/kak-dap.kak
+```
+
+where, once again, <repository_dir> is the directory you cloned the repository to.
+
 ## FAQ
 
 Q: Does it work? 
 
 A: Technically yes, but everything is hardcoded at the moment.
 
-Q: What's the point of this? kakoune-gdb and kakoune-dbgp exist. 
+Q: What's the point of this? kakoune-gdb and kakoune-dbgp exist.
 
 A: kakoune-gdb is limited to languages supported by gdb - that is, C languages and rust. 
 kakoune-dbgp also only supports languages currently supported by the dbgp protocol, which

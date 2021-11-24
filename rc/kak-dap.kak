@@ -1,5 +1,7 @@
 #This option dictates where the kak-dap binary is located.
-decl -hidden str dap_bin %sh{ printf "%s/../target/debug/%s" "${kak_source%/*}" "kak-dap" }
+#decl -hidden str dap_bin %sh{ printf "%s/../target/debug/%s" "${kak_source%/*}" "kak-dap" }
+#This option dictates the command run to run the kak-dap binary.
+decl -hidden str dap_cmd "kak-dap"
 #This option indicates whether the kak-dap binary for this session is running.
 decl -hidden bool dap_running false
 #The directory indicating where the input FIFO is located
@@ -79,7 +81,7 @@ define-command dap-start %{
         mkdir -p $kak_opt_dap_dir
         mkfifo "$kak_opt_dap_dir"/input_pipe
         #Start the kak-dap binary
-        ( tail -f "$kak_opt_dap_dir"/input_pipe | "${kak_opt_dap_bin}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
+        ( tail -f "$kak_opt_dap_dir"/input_pipe | "${kak_opt_dap_cmd}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
     }
 }
 
