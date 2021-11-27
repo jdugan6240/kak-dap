@@ -72,11 +72,15 @@ define-command dap-takedown-ui %{
 }
 
 define-command dap-start %{
-    #Setup the UI
-    dap-setup-ui
-    nop %sh{
-        #Start the kak-dap binary
-        (eval "${kak_opt_dap_cmd}") > /dev/null 2>&1 < /dev/null &
+    eval %sh{
+        if [ "$kak_opt_dap_running" = false ]; then
+            #Setup the UI
+            printf "%s\n" "dap-setup-ui"
+            #Start the kak-dap binary
+            (eval "${kak_opt_dap_cmd}") > /dev/null 2>&1 < /dev/null &
+        else
+            printf "echo %s\n" "kak-dap already running"
+        fi
     }
 }
 
@@ -105,21 +109,26 @@ define-command dap-clear-breakpoint -params 2 %{
 }
 
 define-command dap-toggle-breakpoint %{ eval %sh{
-    #Go through every existing breakpoint
-    for current in $kak_opt_dap_breakpoints_info; do
-        buffer=${current#*|*}
-        line=${current%%|*}
+    
+    if [ "$kak_opt_dap_running" = false ]; then
+        #Go through every existing breakpoint
+        for current in $kak_opt_dap_breakpoints_info; do
+            buffer=${current#*|*}
+            line=${current%%|*}
 
-        #If the current file and cursor line match this currently existing breakpoint
-        if [ "$buffer" = "$kak_buffile" ] && [ "$line" = "$kak_cursor_line" ]; then
-            printf "set-option -remove global dap_breakpoints_info '%s|%s'\n" "$line" "$buffer"
-            printf "dap-refresh-breakpoints-flags %s\n" "$buffer"
-            exit
-        fi
-    done
-    #If we're here, we don't have this breakpoint yet
-    printf "set-option -add global dap_breakpoints_info '%s|%s'\n" "$kak_cursor_line" "$kak_buffile"
-    printf "dap-refresh-breakpoints-flags %s\n" "$kak_buffile"
+            #If the current file and cursor line match this currently existing breakpoint
+            if [ "$buffer" = "$kak_buffile" ] && [ "$line" = "$kak_cursor_line" ]; then
+                printf "set-option -remove global dap_breakpoints_info '%s|%s'\n" "$line" "$buffer"
+                printf "dap-refresh-breakpoints-flags %s\n" "$buffer"
+                exit
+            fi
+        done
+        #If we're here, we don't have this breakpoint yet
+        printf "set-option -add global dap_breakpoints_info '%s|%s'\n" "$kak_cursor_line" "$kak_buffile"
+        printf "dap-refresh-breakpoints-flags %s\n" "$kak_buffile"
+    else
+        printf "echo %s\n" "Can't toggle breakpoints while running"
+    fi
 }}
 
 #
