@@ -32,7 +32,7 @@ pub fn debug_start(cmd: &str, args: &[String]) -> (Sender<json::JsonValue>, Rece
         if buf.is_empty() {
             continue;
         }
-        println!("Debug adapter error: {}", buf);
+        error!("Debug adapter error: {}", buf);
     });
 
     let (reader_tx, reader_rx) = bounded(1024);
@@ -81,6 +81,8 @@ fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Re
         reader.read_exact(&mut content)?;
         let msg = String::from_utf8(content).expect("Failed to read content as UTF-8 string");
         let output = json::parse(&msg.to_string()).unwrap();
+        let output_cln = output.clone();
+        debug!("From debug adapter: {}", json::stringify_pretty(output_cln, 4));
         if output.is_object() {
             tx.send(output).expect("Failed to send message from debug adapter");
         }
@@ -112,9 +114,12 @@ pub fn do_request(cmd: String, args: json::JsonValue, ctx: &mut Context) {
     };
 
     let msg_cln = msg.clone();
+    let msg_pretty = msg_cln.clone();
+
+    debug!("To debug adapter: {}", json::stringify_pretty(msg_pretty, 4));
 
     //Send it to the debug adapter
-    ctx.debg_apt_tx.send(msg).expect("Failed to send initialize message to debug adapter");
+    ctx.debg_apt_tx.send(msg).expect("Failed to send message to debug adapter");
 
     //Add it to the pending requests list
     ctx.cur_requests.push(msg_cln);
@@ -131,6 +136,8 @@ pub fn do_response(cmd: String, body: json::JsonValue, ctx: &mut Context) {
         "success": true,
         "body": body
     };
+    let msg_cln = msg.clone();
+    debug!("To debug adapter: {}", json::stringify_pretty(msg_cln, 4));
     //Send it to the debug adapter
     ctx.debg_apt_tx.send(msg).expect("Failed to send response to debug adapter");
 }

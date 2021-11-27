@@ -56,7 +56,7 @@ pub fn clean_socket(session: &String) {
     let path = temp_dir();
     let sock_path = path.join(session);
     if fs::remove_file(sock_path).is_err() {
-        println!("Failed to remove socket file");
+        error!("Failed to remove socket file");
     };
 }
 
@@ -71,13 +71,13 @@ pub fn start_kak_comms(session: &String) -> Receiver<String> {
         let sock_path = path.clone();
         //Clean up dead kak-dap session
         if fs::remove_file(sock_path).is_err() {
-            println!("Failed to clean up dead kak-dap session");
+            error!("Failed to clean up dead kak-dap session");
         }
     }
     let listener = match UnixListener::bind(&path) {
         Ok(listener) => listener,
         Err(e) => {
-            println!("Failed to bind: {}", e);
+            error!("Failed to bind: {}", e);
             return reader_rx;
         }
     };
@@ -92,16 +92,16 @@ pub fn start_kak_comms(session: &String) -> Receiver<String> {
                             if request.is_empty() {
                                 continue;
                             }
-                            println!("From editor: {}", request);
+                            debug!("From editor: {}", request);
                             reader_tx.send(request).expect("Failed to send request from Kakoune");
                         }
                         Err(e) => {
-                            println!("Failed to read from stream: {}", e);
+                            error!("Failed to read from stream: {}", e);
                         }
                     }
                 }
                 Err (e) => {
-                    println!("Failed to accept connection: {}", e);
+                    error!("Failed to accept connection: {}", e);
                 }
             }
         }
