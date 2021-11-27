@@ -86,7 +86,7 @@ define-command dap-start %{
 
 define-command dap-cmd -params 1..2 %{ eval %sh{
     #echo "$1 $2" > "$kak_opt_dap_dir"/input_pipe
-    printf "%s %s" "$1" "$2" | socat - UNIX-CLIENT:/tmp/kak-dap/sock
+    printf "%s %s" "$1" "$2" | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
 }}
 
 define-command dap-stop %{

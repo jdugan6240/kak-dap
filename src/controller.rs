@@ -12,7 +12,7 @@ use crate::stack_trace;
 use crate::variables;
 
 pub fn start(session: &String) {
-    let kakoune_rx = kakoune::start_kak_comms();
+    let kakoune_rx = kakoune::start_kak_comms(session);
     //Begin communication with the debug adapter
     //Debug adapter hardcoded for now; TODO: make configurable
     let (adapter_tx, adapter_rx) = debug_adapter_comms::debug_start("python", &["/home/jdugan/debugpy/src/debugpy/adapter".to_string()]);
@@ -93,7 +93,7 @@ pub fn parse_cmd(command: String, ctx: &mut Context) {
     //Depending on the command given, act accordingly
     if cmd == "stop" {
         kakoune::kak_command("set-option global dap_running false".to_string(), ctx);
-        kakoune::clean_socket();
+        kakoune::clean_socket(&ctx.session);
         process::exit(0);
     }
     else if cmd == "continue" {

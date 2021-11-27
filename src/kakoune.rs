@@ -52,9 +52,9 @@ pub fn temp_dir() -> path::PathBuf {
 }
 
 //This function removes the socket file.
-pub fn clean_socket() {
+pub fn clean_socket(session: &String) {
     let path = temp_dir();
-    let sock_path = path.join("sock");
+    let sock_path = path.join(session);
     if fs::remove_file(sock_path).is_err() {
         println!("Failed to remove socket file");
     };
@@ -62,11 +62,11 @@ pub fn clean_socket() {
 
 //This function spawns the thread that listens for commands on a socket
 //and issues commands to the Kakoune session that spawned us.
-pub fn start_kak_comms() -> Receiver<String> {
+pub fn start_kak_comms(session: &String) -> Receiver<String> {
     let (reader_tx, reader_rx) = bounded(1024);
     //Create socket
     let mut path = temp_dir();
-    path.push("sock");
+    path.push(session);
     if path.exists() {
         let sock_path = path.clone();
         //Clean up dead kak-dap session
