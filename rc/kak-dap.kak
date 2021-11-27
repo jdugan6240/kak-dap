@@ -1,5 +1,5 @@
 #This option dictates the command run to run the kak-dap binary.
-decl -hidden str dap_cmd "kak-dap"
+decl -hidden str dap_cmd "kak-dap -s %val{session}"
 #This option indicates whether the kak-dap binary for this session is running.
 decl -hidden bool dap_running false
 #The directory indicating where the input FIFO is located
@@ -74,9 +74,9 @@ define-command dap-takedown-ui %{
 define-command dap-start %{
     #Setup the UI
     dap-setup-ui
-    eval %sh{
+    nop %sh{
         #Start the kak-dap binary
-        ( "${kak_opt_dap_cmd}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
+        (eval "${kak_opt_dap_cmd}") > /dev/null 2>&1 < /dev/null &
     }
 }
 

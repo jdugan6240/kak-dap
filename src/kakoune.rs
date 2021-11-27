@@ -30,6 +30,7 @@ pub fn editor_escape(s: &str) -> String {
     s.replace("'", "''")
 }
 
+//This function creates the kak-dap temp dir.
 pub fn temp_dir() -> path::PathBuf {
     let mut path = env::temp_dir();
     path.push("kak-dap");
@@ -48,6 +49,15 @@ pub fn temp_dir() -> path::PathBuf {
         .create(&path)
         .unwrap();
     path
+}
+
+//This function removes the socket file.
+pub fn clean_socket() {
+    let path = temp_dir();
+    let sock_path = path.join("sock");
+    if fs::remove_file(sock_path).is_err() {
+        println!("Failed to remove socket file");
+    };
 }
 
 //This function spawns the thread that listens for commands on a socket

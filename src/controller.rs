@@ -93,6 +93,7 @@ pub fn parse_cmd(command: String, ctx: &mut Context) {
     //Depending on the command given, act accordingly
     if cmd == "stop" {
         kakoune::kak_command("set-option global dap_running false".to_string(), ctx);
+        kakoune::clean_socket();
         process::exit(0);
     }
     else if cmd == "continue" {
