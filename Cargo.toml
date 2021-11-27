@@ -9,7 +9,6 @@ edition = "2018"
 [dependencies]
 clap = "2.33.0"
 crossbeam-channel = "0.5"
-fnv="1"
 json = "0.12.4"
 libc = "0.2.71"
 log = "0.4.6"

@@ -1,5 +1,6 @@
 use crossbeam_channel::{bounded, Receiver, Sender};
-use fnv::FnvHashMap;
+//use fnv::FnvHashMap;
+use std::collections::HashMap;
 use std::io::{self, BufRead, BufReader, BufWriter, Error, ErrorKind, Read, Write};
 use std::process::{Command, Stdio};
 use std::thread;
@@ -52,7 +53,7 @@ pub fn debug_start(cmd: &str, args: &[String]) -> (Sender<json::JsonValue>, Rece
 fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Result<()> {
     //Store headers of message being received
     //Used to determine if Content-Length header has been received
-    let mut headers = FnvHashMap::default();
+    let mut headers = HashMap::new();
     loop {
         headers.clear();
         loop {
