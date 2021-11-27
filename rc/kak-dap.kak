@@ -1,5 +1,3 @@
-#This option dictates where the kak-dap binary is located.
-#decl -hidden str dap_bin %sh{ printf "%s/../target/debug/%s" "${kak_source%/*}" "kak-dap" }
 #This option dictates the command run to run the kak-dap binary.
 decl -hidden str dap_cmd "kak-dap"
 #This option indicates whether the kak-dap binary for this session is running.
@@ -77,16 +75,14 @@ define-command dap-start %{
     #Setup the UI
     dap-setup-ui
     eval %sh{
-        #Create the input FIFO
-        mkdir -p $kak_opt_dap_dir
-        mkfifo "$kak_opt_dap_dir"/input_pipe
         #Start the kak-dap binary
-        ( tail -f "$kak_opt_dap_dir"/input_pipe | "${kak_opt_dap_cmd}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
+        ( "${kak_opt_dap_cmd}" -s "${kak_session}" 2>&1 & ) > /dev/null 2>&1 < /dev/null
     }
 }
 
 define-command dap-cmd -params 1..2 %{ eval %sh{
-    echo "$1 $2" > "$kak_opt_dap_dir"/input_pipe
+    #echo "$1 $2" > "$kak_opt_dap_dir"/input_pipe
+    printf "%s %s" "$1" "$2" | socat - UNIX-CLIENT:/tmp/kak-dap/sock
 }}
 
 define-command dap-stop %{

@@ -1,8 +1,9 @@
-use std::io;
-use std::io::{Write};
+use std::io::{Read, Write};
 use std::process::{Command, Stdio};
 use crossbeam_channel::{bounded, Receiver};
-use std::thread;
+use std::{env, fs, path, thread};
+use std::os::unix::fs::DirBuilderExt;
+use std::os::unix::net::UnixListener;
 
 use crate::context::*;
 
@@ -29,16 +30,63 @@ pub fn editor_escape(s: &str) -> String {
     s.replace("'", "''")
 }
 
-//This function spawns the thread that listens for commands on STDIO
+pub fn temp_dir() -> path::PathBuf {
+    let mut path = env::temp_dir();
+    path.push("kak-dap");
+    let old_mask = unsafe { libc::umask(0) };
+    // Ignoring possible error during $TMPDIR/kak-dap creation to have a chance to restore umask.
+    let _ = fs::DirBuilder::new()
+        .recursive(true)
+        .mode(0o1777)
+        .create(&path);
+    unsafe {
+        libc::umask(old_mask);
+    }
+    fs::DirBuilder::new()
+        .recursive(true)
+        .mode(0o700)
+        .create(&path)
+        .unwrap();
+    path
+}
+
+//This function spawns the thread that listens for commands on a socket
 //and issues commands to the Kakoune session that spawned us.
 pub fn start_kak_comms() -> Receiver<String> {
     let (reader_tx, reader_rx) = bounded(1024);
-    //Begin stdin processing
+    //Create socket
+    let mut path = temp_dir();
+    path.push("sock");
+    let listener = match UnixListener::bind(&path) {
+        Ok(listener) => listener,
+        Err(e) => {
+            println!("Failed to bind: {}", e);
+            return reader_rx;
+        }
+    };
+    //Begin socket processing
     thread::spawn(move || {
-        loop {
-            let mut input = String::new();
-            io::stdin().read_line(&mut input).expect("Failed to get input");
-            reader_tx.send(input).expect("Failed to send request from Kakoune");
+        for stream in listener.incoming() {
+            match stream {
+                Ok(mut stream) => {
+                    let mut request = String::new();
+                    match stream.read_to_string(&mut request) {
+                        Ok(_) => {
+                            if request.is_empty() {
+                                continue;
+                            }
+                            println!("From editor: {}", request);
+                            reader_tx.send(request).expect("Failed to send request from Kakoune");
+                        }
+                        Err(e) => {
+                            println!("Failed to read from stream: {}", e);
+                        }
+                    }
+                }
+                Err (e) => {
+                    println!("Failed to accept connection: {}", e);
+                }
+            }
         }
     });
 
