@@ -35,7 +35,7 @@ pub fn temp_dir() -> path::PathBuf {
     let mut path = env::temp_dir();
     path.push("kak-dap");
     let old_mask = unsafe { libc::umask(0) };
-    // Ignoring possible error during $TMPDIR/kak-dap creation to have a chance to restore umask.
+    //Ignoring possible error during $TMPDIR/kak-dap creation to have a chance to restore umask.
     let _ = fs::DirBuilder::new()
         .recursive(true)
         .mode(0o1777)
@@ -67,6 +67,13 @@ pub fn start_kak_comms() -> Receiver<String> {
     //Create socket
     let mut path = temp_dir();
     path.push("sock");
+    if path.exists() {
+        let sock_path = path.clone();
+        //Clean up dead kak-dap session
+        if fs::remove_file(sock_path).is_err() {
+            println!("Failed to clean up dead kak-dap session");
+        }
+    }
     let listener = match UnixListener::bind(&path) {
         Ok(listener) => listener,
         Err(e) => {

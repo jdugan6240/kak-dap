@@ -9,12 +9,12 @@ mod stack_trace;
 mod variables;
 mod types;
 
-use clap::{Arg, App};
+use clap::{crate_version, Arg, App};
 
 fn main() {
     //Get command line arguments
     let matches = App::new("Kak-DAP")
-        .version("0.1.0")
+        .version(crate_version!())
         .arg(Arg::with_name("session")
                 .short("s")
                 .long("session")
