@@ -265,6 +265,6 @@ define-command -hidden dap-stack-trace -params 3 %{
     dap-show-stacktrace %arg{3}
 }
 
-define-command -hidden dap-evaluate-response -params 2 %{
-    try %{ eval -client %opt{jumpclient} %{info "%arg{1}: %arg{2}"} }
+define-command -hidden dap-evaluate-response -params 2.. %{
+    try %{ eval -client %opt{jumpclient} %{ info -title "Result" " %arg{1}:%arg{2} "}}
 }

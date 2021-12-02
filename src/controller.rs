@@ -32,7 +32,6 @@ pub fn start(session: &String) {
     thread::spawn(move || {
         for msg in adapter_rx {
             let mut ctx = ctx.lock().expect("Failed to lock context");
-            kakoune::print_debug(&msg.to_string(), &ctx);
             if msg["type"].to_string() == "response" {
                 let msg_cln = msg.clone();
                 let ctx_cln = &mut ctx;

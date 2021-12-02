@@ -1,5 +1,4 @@
 use crossbeam_channel::{bounded, Receiver, Sender};
-//use fnv::FnvHashMap;
 use std::collections::HashMap;
 use std::io::{self, BufRead, BufReader, BufWriter, Error, ErrorKind, Read, Write};
 use std::process::{Command, Stdio};
@@ -23,10 +22,8 @@ pub fn debug_start(cmd: &str, args: &[String]) -> (Sender<json::JsonValue>, Rece
     let writer = BufWriter::new(child.stdin.take().expect("Failed to open stdin"));
     let reader = BufReader::new(child.stdout.take().expect("Failed to open stdout"));
 
-    //Temporary way of tracing debug adapter errors
-    //Print any errors to the Kakoune debug buffer
+    //Tracing debug adapter errors
     let mut stderr = BufReader::new(child.stderr.take().expect("Failed to open stderr"));
-    //thread::spawn(move || loop {
     thread::spawn(move || loop {
         let mut buf = String::new();
         stderr.read_to_string(&mut buf).unwrap();
@@ -82,8 +79,7 @@ fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Re
         reader.read_exact(&mut content)?;
         let msg = String::from_utf8(content).expect("Failed to read content as UTF-8 string");
         let output = json::parse(&msg.to_string()).unwrap();
-        let output_cln = output.clone();
-        debug!("From debug adapter: {}", json::stringify_pretty(output_cln, 4));
+        debug!("From debug adapter: {}", output);
         if output.is_object() {
             tx.send(output).expect("Failed to send message from debug adapter");
         }
@@ -115,9 +111,8 @@ pub fn do_request(cmd: String, args: json::JsonValue, ctx: &mut Context) {
     };
 
     let msg_cln = msg.clone();
-    let msg_pretty = msg_cln.clone();
 
-    debug!("To debug adapter: {}", json::stringify_pretty(msg_pretty, 4));
+    debug!("To debug adapter: {}", msg_cln);
 
     //Send it to the debug adapter
     ctx.debg_apt_tx.send(msg).expect("Failed to send message to debug adapter");
@@ -137,8 +132,7 @@ pub fn do_response(cmd: String, body: json::JsonValue, ctx: &mut Context) {
         "success": true,
         "body": body
     };
-    let msg_cln = msg.clone();
-    debug!("To debug adapter: {}", json::stringify_pretty(msg_cln, 4));
+    debug!("To debug adapter: {}", msg);
     //Send it to the debug adapter
     ctx.debg_apt_tx.send(msg).expect("Failed to send response to debug adapter");
 }

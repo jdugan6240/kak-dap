@@ -77,9 +77,10 @@ pub fn handle_evaluate_response(msg: json::JsonValue, ctx: &mut Context) {
     let typ = &msg["body"]["type"];
     
     //Send it to Kakoune for processing
-    let mut cmd = "dap-evaluate-response ".to_string();
-    cmd.push_str(&result.to_string());
-    cmd.push_str(" ");
-    cmd.push_str(&typ.to_string());
+    let mut cmd = "dap-evaluate-response ' ".to_string();
+    cmd.push_str(&kakoune::editor_escape(&result.to_string()));
+    cmd.push_str(" ' ' ");
+    cmd.push_str(&kakoune::editor_escape(&typ.to_string()));
+    cmd.push_str(" '");
     kakoune::kak_command(cmd, &ctx);
 }

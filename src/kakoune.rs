@@ -19,12 +19,6 @@ pub fn kak_command(command: String, ctx: &Context) {
     child_stdin.write_all(command.as_bytes()).expect("Failed to write to stdin of child process.");
 }
 
-//This function prints to the Kakoune debug buffer.
-pub fn print_debug(message: &String, ctx: &Context) {
-    let cmd = format!("echo -debug '{}'", message);
-    kak_command(cmd, ctx);
-}
-
 /// Escape Kakoune string wrapped into single quote
 pub fn editor_escape(s: &str) -> String {
     s.replace("'", "''")
