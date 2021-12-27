@@ -85,4 +85,4 @@ for me, so this is going to take some time.
 
 ## License
 
-kak-dap is "licensed" under the Unlicense.
+kak-dap is licensed under the BSD 0-Clause License.
