@@ -123,7 +123,7 @@ pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
 
 //Handles the "expand" command from the editor.
 pub fn expand_variable(cmd: &String, ctx: &mut Context) {
-    let mut var = cmd[7..].to_string();
+    let mut var = cmd.to_string();
     var = var.trim().to_string();
     //If the string starts with a '<', this is an expandable variable
     let first_char = var.chars().next().unwrap();

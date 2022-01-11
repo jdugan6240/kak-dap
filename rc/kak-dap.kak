@@ -135,25 +135,36 @@ define-command dap-toggle-breakpoint %{ eval %sh{
 # Commands sent directly to debug adapter
 #
 
-define-command dap-continue %{
-    dap-cmd continue
-}
+define-command dap-continue %{ nop %sh{
+    printf '{
+    "cmd": "continue" 
+    }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+}}
 
-define-command dap-next %{
-    dap-cmd next
-}
+define-command dap-next %{ nop %sh{
+    printf '{
+    "cmd": "next" 
+    }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+}}
 
-define-command dap-step-in %{
-    dap-cmd stepIn
-}
+define-command dap-step-in %{ nop %sh{
+    printf '{
+    "cmd": "stepIn" 
+    }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+}}
 
-define-command dap-step-out %{
-    dap-cmd stepOut
-}
+define-command dap-step-out %{ nop %sh{
+    printf '{
+    "cmd": "stepOut" 
+    }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+}}
 
-define-command dap-evaluate -params 1 %{
-    dap-cmd evaluate %arg{1}
-}
+define-command dap-evaluate -params 1 %{ nop %sh{
+    printf '{
+    "cmd": "evaluate",
+    "args": "%s",
+    }' $1 | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+}}
 
 define-command dap-set-location -params 2 %{
     set-option global dap_location_info "%arg{1}|%arg{2}"
@@ -236,12 +247,19 @@ define-command -hidden dap-show-variables -params 1 %{
 
 define-command -hidden dap-expand-variable %{
     evaluate-commands -try-client %opt{variablesclient} %{
- 		#Get variable we're expanding
+        #Get variable we're expanding
         execute-keys -save-regs '' "ghwwwW"
         set-register t %val{selection}
-        evaluate-commands %sh{
+        #evaluate-commands %sh{
+        #    value="${kak_reg_t}"
+        #    printf "dap-cmd expand \"%s\"\n" $value
+        #}
+        nop %sh{
             value="${kak_reg_t}"
-            printf "dap-cmd expand \"%s\"\n" $value
+            printf '{
+            "cmd": "expand",
+            "args": "%s"
+            }' $value | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
         }
     }
 }
@@ -252,7 +270,11 @@ define-command -hidden dap-expand-variable %{
 
 define-command -hidden dap-run-in-terminal -params 1.. %{
     terminal %arg{@}
-    dap-cmd pid
+    nop %sh{
+        printf '{
+        "cmd": "pid",
+        }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+    }
 }
 
 #

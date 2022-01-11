@@ -56,7 +56,7 @@ pub fn clean_socket(session: &String) {
 
 //This function spawns the thread that listens for commands on a socket
 //and issues commands to the Kakoune session that spawned us.
-pub fn start_kak_comms(session: &String) -> Receiver<String> {
+pub fn start_kak_comms(session: &String) -> Receiver<json::JsonValue> {
     let (reader_tx, reader_rx) = bounded(1024);
     //Create socket
     let mut path = temp_dir();
@@ -87,7 +87,8 @@ pub fn start_kak_comms(session: &String) -> Receiver<String> {
                                 continue;
                             }
                             debug!("From editor: {}", request);
-                            reader_tx.send(request).expect("Failed to send request from Kakoune");
+                            let parsed_request = json::parse(&request).unwrap();
+                            reader_tx.send(parsed_request).expect("Failed to send request from Kakoune");
                         }
                         Err(e) => {
                             error!("Failed to read from stream: {}", e);

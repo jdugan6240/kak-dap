@@ -58,7 +58,7 @@ pub fn start(session: &String) {
     //Handle messages from Kakoune
     for msg in kakoune_rx {
         let mut ctx = ctx.lock().expect("Failed to lock context");
-        parse_cmd(msg.to_string(), &mut ctx);
+        parse_cmd(msg, &mut ctx);
     }
 
 }
@@ -85,59 +85,57 @@ pub fn handle_adapter_response(msg: json::JsonValue, ctx: &mut Context) {
 }
 
 //Handle commands from Kakoune.
-pub fn parse_cmd(command: String, ctx: &mut Context) {
-    //Trim the newline from the command
-    let cmd = command.trim();
+pub fn parse_cmd(cmd: json::JsonValue, ctx: &mut Context) {
 
     //Depending on the command given, act accordingly
-    if cmd == "stop" {
+    if cmd["cmd"] == "stop" {
         kakoune::kak_command("set-option global dap_running false".to_string(), ctx);
         kakoune::clean_socket(&ctx.session);
         process::exit(0);
     }
-    else if cmd == "continue" {
+    else if cmd["cmd"] == "continue" {
         //Send a continue command to the debugger
         let continue_args = object!{
             "threadId": 1
         };
         debug_adapter_comms::do_request("continue".to_string(), continue_args, ctx);
     }
-    else if cmd == "next" {
+    else if cmd["cmd"] == "next" {
         //Send a next command to the debugger
         let next_args = object!{
             "threadId": 1
         };
         debug_adapter_comms::do_request("next".to_string(), next_args, ctx);
     }
-    else if cmd == "pid" {
+    else if cmd["cmd"] == "pid" {
         //Send response to debug adapter
         debug_adapter_comms::do_response("runInTerminal".to_string(), object!{}, ctx);
     }
-    else if cmd == "stepIn" {
+    else if cmd["cmd"] == "stepIn" {
         //Send a stepIn command to the debugger
         let step_in_args = object!{
             "threadId": 1
         };
         debug_adapter_comms::do_request("stepIn".to_string(), step_in_args, ctx);
     }
-    else if cmd == "stepOut" {
+    else if cmd["cmd"] == "stepOut" {
         //Send a stepIn command to the debugger
         let step_out_args = object!{
             "threadId": 1
         };
         debug_adapter_comms::do_request("stepOut".to_string(), step_out_args, ctx);
     }
-    else if cmd.starts_with("evaluate") {
+    else if cmd["cmd"] == "evaluate" {
         //Extract the expression and send an "evaluate" command to the debugger
-        let expr = cmd[9..].to_string();
+        let expr = cmd["args"].to_string();
         let eval_args = object!{
             "expression": expr,
             "frameId": ctx.cur_stack
         };
         debug_adapter_comms::do_request("evaluate".to_string(), eval_args, ctx);
     }
-    else if cmd.starts_with("expand") {
-        variables::expand_variable(&command, ctx);
+    else if cmd["cmd"] == "expand" {
+        variables::expand_variable(&cmd["args"].to_string(), ctx);
     }
 }
 
