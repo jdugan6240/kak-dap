@@ -162,8 +162,8 @@ define-command dap-step-out %{ nop %sh{
 define-command dap-evaluate -params 1 %{ nop %sh{
     printf '{
     "cmd": "evaluate",
-    "args": "%s",
-    }' $1 | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+    "args": "%s"
+    }' "$1" | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
 }}
 
 define-command dap-set-location -params 2 %{

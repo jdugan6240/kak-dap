@@ -86,7 +86,6 @@ pub fn handle_adapter_response(msg: json::JsonValue, ctx: &mut Context) {
 
 //Handle commands from Kakoune.
 pub fn parse_cmd(cmd: json::JsonValue, ctx: &mut Context) {
-
     //Depending on the command given, act accordingly
     if cmd["cmd"] == "stop" {
         kakoune::kak_command("set-option global dap_running false".to_string(), ctx);
