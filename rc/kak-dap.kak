@@ -77,6 +77,9 @@ define-command dap-start %{
             #Setup the UI
             printf "%s\n" "dap-setup-ui"
             #Start the kak-dap binary
+            printf '{
+            "breakpoints": "%s"
+            }' "$kak_opt_dap_breakpoints_info" > /tmp/kak-dap/${kak_session}_breakpoints
             (eval "${kak_opt_dap_cmd}") > /dev/null 2>&1 < /dev/null &
         else
             printf "echo %s\n" "kak-dap already running"
@@ -91,7 +94,12 @@ define-command dap-cmd -params 1..2 %{ eval %sh{
 
 define-command dap-stop %{
     #Stop the kak-dap binary
-    dap-cmd "stop"
+    nop %sh{
+        printf '{
+        "cmd": "stop"
+        }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+    }
+    #dap-cmd "stop"
     #Reset the location flag
     dap-reset-location
     #Takedown the UI

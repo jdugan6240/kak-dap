@@ -2,7 +2,7 @@ use std::process;
 use std::thread;
 use std::sync::{Arc, Mutex};
 
-use json::object;
+use json::{object, JsonValue};
 
 use crate::kakoune;
 use crate::debug_adapter_comms;
