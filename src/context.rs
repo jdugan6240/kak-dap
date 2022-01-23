@@ -1,6 +1,7 @@
 use crossbeam_channel::Sender;
+use std::collections::HashMap;
 
-use crate::types::{Scope,Variable};
+use crate::types::{Scope, Variable};
 
 //Struct with which to carry around our "global" variables
 pub struct Context {
@@ -23,7 +24,9 @@ pub struct Context {
     //The current stack frame.
     pub cur_stack: u64,
     //The requests we have sent to the adapter
-    pub cur_requests: Vec<json::JsonValue>
+    pub cur_requests: Vec<json::JsonValue>,
+    //The breakpoints passed to the kak-dap session
+    pub breakpoint_data: HashMap<String, Vec<u64>>,
 }
 
 impl Context {
@@ -38,7 +41,8 @@ impl Context {
             variables: vec![],
             var_reqs: 0,
             cur_stack: 0,
-            cur_requests: vec![]
+            cur_requests: vec![],
+            breakpoint_data: HashMap::new(),
         }
     }
 

@@ -7,7 +7,7 @@ use json::object;
 //Handles the "stopped" event.
 pub fn handle_stopped_event(_msg: json::JsonValue, ctx: &mut Context) {
     //Send a stack trace request
-    let stack_trace_args = object!{
+    let stack_trace_args = object! {
         "threadId": 1
     };
     debug_adapter_comms::do_request("stackTrace".to_string(), stack_trace_args, ctx);
@@ -45,7 +45,7 @@ pub fn handle_stack_trace_response(msg: json::JsonValue, ctx: &mut Context) {
     //Send a Scopes message to kickstart retrieving the variables
     let id = frames[0]["id"].to_string().parse::<u64>().unwrap();
     ctx.cur_stack = id;
-    let scopes_args = object!{
+    let scopes_args = object! {
         "frameId": id,
     };
     debug_adapter_comms::do_request("scopes".to_string(), scopes_args, ctx);

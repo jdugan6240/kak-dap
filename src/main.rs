@@ -3,19 +3,19 @@ extern crate clap;
 extern crate log;
 extern crate simplelog;
 
-mod kakoune;
+mod context;
 mod controller;
 mod debug_adapter_comms;
-mod context;
 mod general;
+mod kakoune;
 mod stack_trace;
-mod variables;
 mod types;
+mod variables;
 
-use clap::{crate_version, Arg, App};
+use clap::{crate_version, App, Arg};
+use simplelog::*;
 use std::fs;
 use std::fs::File;
-use simplelog::*;
 
 use json::object;
 
@@ -29,7 +29,7 @@ fn main() {
                 .long("session")
                 .value_name("SESSION")
                 .help("Kakoune session to communicate with")
-                .required(true)
+                .required(true),
         )
         .arg(
             Arg::with_name("log")
@@ -37,37 +37,43 @@ fn main() {
                 .value_name("PATH")
                 .help("File to write the log into instead of stderr")
                 .takes_value(true),
-        ).get_matches();
+        )
+        .get_matches();
 
     //Extract the current session
-    let session : String = matches.value_of("session").map(str::to_string).unwrap();
-
+    let session: String = matches.value_of("session").map(str::to_string).unwrap();
 
     //Initialize the logger
     if let Some(log_path) = matches.value_of("log") {
         WriteLogger::init(
             LevelFilter::Trace,
             Config::default(),
-            File::create(log_path).unwrap()).unwrap();
-    }
-    else {
+            File::create(log_path).unwrap(),
+        )
+        .unwrap();
+    } else {
         TermLogger::init(
             LevelFilter::Info,
             Config::default(),
             TerminalMode::Stdout,
-            ColorChoice::Auto).unwrap();
+            ColorChoice::Auto,
+        )
+        .unwrap();
     }
 
     //If we are receiving breakpoints from the breakpoints file, get them
-    let mut _breakpoints = object!{};
+    let mut breakpoints = object! {};
     let mut path = kakoune::temp_dir();
     path.push(format!("{}_breakpoints", session));
-    debug!("Searching for breakpoints on path {}", path.to_string_lossy());
+    debug!(
+        "Searching for breakpoints on path {}",
+        path.to_string_lossy()
+    );
     if path.exists() {
         let break_path = path.clone();
         let contents = fs::read_to_string(path).expect("Couldn't read from file");
-        _breakpoints = json::parse(&contents).expect("Couldn't convert contents to JSON");
-        debug!("Breakpoint data: {}", _breakpoints.to_string());
+        breakpoints = json::parse(&contents).expect("Couldn't convert contents to JSON");
+        debug!("Breakpoint data: {}", breakpoints.to_string());
         if fs::remove_file(break_path).is_err() {
             error!("Couldn't clean up breakpoints file");
         }
@@ -75,5 +81,5 @@ fn main() {
 
     //Set the dap_running option and kickstart the whole kit and kaboodle
     debug!("Starting kak-dap session");
-    controller::start(&session);
+    controller::start(&session, breakpoints);
 }

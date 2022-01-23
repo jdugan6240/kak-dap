@@ -7,7 +7,7 @@ use json::object;
 //Initializes the debug adapter.
 pub fn initialize(ctx: &mut Context) {
     //Construct the initialize request
-    let initialize_args = object!{
+    let initialize_args = object! {
         "adapterID": "pydbg",
         "linesStartAt1": true,
         "columnsStartAt1": true,
@@ -21,7 +21,7 @@ pub fn initialize(ctx: &mut Context) {
 pub fn handle_initialized_event(_msg: json::JsonValue, ctx: &mut Context) {
     //This is where we'd set the breakpoints
     //Breakpoints hardcoded for now; TODO: receive breakpoints from editor.
-    let break_args = object!{
+    let break_args = object! {
         "source": {
             "name": "test",
             "path": "/home/jdugan/projects/kak_plugins/kak-dap/demo/python/test.py"
@@ -35,14 +35,14 @@ pub fn handle_initialized_event(_msg: json::JsonValue, ctx: &mut Context) {
     debug_adapter_comms::do_request("setBreakpoints".to_string(), break_args, ctx);
 
     //Now, send the configurationDone request.
-    debug_adapter_comms::do_request("configurationDone".to_string(), object!{}, ctx);
+    debug_adapter_comms::do_request("configurationDone".to_string(), object! {}, ctx);
 }
 
 //Handles the "initialize" response.
 pub fn handle_initialize_response(_msg: json::JsonValue, ctx: &mut Context) {
     //We need to send the launch request before the breakpoints.
     //For background: https://github.com/microsoft/vscode/issues/4902
-    let launch_args = object!{
+    let launch_args = object! {
         "program": "/home/jdugan/projects/kak_plugins/kak-dap/demo/python/test.py",
         "args": [],
         "stopOnEntry": false,
@@ -75,7 +75,7 @@ pub fn handle_evaluate_response(msg: json::JsonValue, ctx: &mut Context) {
     //Get the result and type
     let result = &msg["body"]["result"];
     let typ = &msg["body"]["type"];
-    
+
     //Send it to Kakoune for processing
     let mut cmd = "dap-evaluate-response ' ".to_string();
     cmd.push_str(&kakoune::editor_escape(&result.to_string()));

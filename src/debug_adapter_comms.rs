@@ -1,14 +1,17 @@
 use crossbeam_channel::{bounded, Receiver, Sender};
+use json::object;
 use std::collections::HashMap;
 use std::io::{self, BufRead, BufReader, BufWriter, Error, ErrorKind, Read, Write};
 use std::process::{Command, Stdio};
 use std::thread;
-use json::object;
 
 use crate::context::*;
 
 //Start the debug adapter process and connect to its stdio.
-pub fn debug_start(cmd: &str, args: &[String]) -> (Sender<json::JsonValue>, Receiver<json::JsonValue>) {
+pub fn debug_start(
+    cmd: &str,
+    args: &[String],
+) -> (Sender<json::JsonValue>, Receiver<json::JsonValue>) {
     //Spawn debug adapter process and capture stdio
     let mut child = Command::new(cmd)
         .args(args)
@@ -38,7 +41,8 @@ pub fn debug_start(cmd: &str, args: &[String]) -> (Sender<json::JsonValue>, Rece
         reader_loop(reader, &reader_tx).expect("Failed to read message from debug adapter");
     });
 
-    let (writer_tx, writer_rx): (Sender<json::JsonValue>, Receiver<json::JsonValue>) = bounded(1024);
+    let (writer_tx, writer_rx): (Sender<json::JsonValue>, Receiver<json::JsonValue>) =
+        bounded(1024);
     thread::spawn(move || {
         writer_loop(writer, &writer_rx).expect("Failed to write message to debug adapter");
     });
@@ -81,7 +85,8 @@ fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Re
         let output = json::parse(&msg.to_string()).unwrap();
         debug!("From debug adapter: {}", output);
         if output.is_object() {
-            tx.send(output).expect("Failed to send message from debug adapter");
+            tx.send(output)
+                .expect("Failed to send message from debug adapter");
         }
     }
 }
@@ -103,7 +108,7 @@ fn writer_loop(mut writer: impl Write, rx: &Receiver<json::JsonValue>) -> io::Re
 
 //Sends a request to the debug adapter.
 pub fn do_request(cmd: String, args: json::JsonValue, ctx: &mut Context) {
-    let msg = object!{
+    let msg = object! {
         "type": "request",
         "seq": ctx.next_req_id(),
         "command": cmd,
@@ -115,7 +120,9 @@ pub fn do_request(cmd: String, args: json::JsonValue, ctx: &mut Context) {
     debug!("To debug adapter: {}", msg_cln);
 
     //Send it to the debug adapter
-    ctx.debg_apt_tx.send(msg).expect("Failed to send message to debug adapter");
+    ctx.debg_apt_tx
+        .send(msg)
+        .expect("Failed to send message to debug adapter");
 
     //Add it to the pending requests list
     ctx.cur_requests.push(msg_cln);
@@ -124,7 +131,7 @@ pub fn do_request(cmd: String, args: json::JsonValue, ctx: &mut Context) {
 //Sends a response to the debug adapter.
 //Currently, only one response is sent by the client: the response to the runInTerminal command.
 pub fn do_response(cmd: String, body: json::JsonValue, ctx: &mut Context) {
-    let msg = object!{
+    let msg = object! {
         "type": "response",
         "seq": ctx.next_req_id(),
         "request_seq": ctx.last_adapter_seq,
@@ -134,5 +141,7 @@ pub fn do_response(cmd: String, body: json::JsonValue, ctx: &mut Context) {
     };
     debug!("To debug adapter: {}", msg);
     //Send it to the debug adapter
-    ctx.debg_apt_tx.send(msg).expect("Failed to send response to debug adapter");
+    ctx.debg_apt_tx
+        .send(msg)
+        .expect("Failed to send response to debug adapter");
 }

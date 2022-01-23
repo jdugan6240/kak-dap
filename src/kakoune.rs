@@ -1,9 +1,9 @@
-use std::io::{Read, Write};
-use std::process::{Command, Stdio};
 use crossbeam_channel::{bounded, Receiver};
-use std::{env, fs, path, thread};
+use std::io::{Read, Write};
 use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::net::UnixListener;
+use std::process::{Command, Stdio};
+use std::{env, fs, path, thread};
 
 use crate::context::*;
 
@@ -14,9 +14,12 @@ pub fn kak_command(command: String, ctx: &Context) {
         .stdin(Stdio::piped())
         .stdout(Stdio::null())
         .stdout(Stdio::null())
-        .spawn().unwrap();
+        .spawn()
+        .unwrap();
     let child_stdin = child.stdin.as_mut().unwrap();
-    child_stdin.write_all(command.as_bytes()).expect("Failed to write to stdin of child process.");
+    child_stdin
+        .write_all(command.as_bytes())
+        .expect("Failed to write to stdin of child process.");
 }
 
 /// Escape Kakoune string wrapped into single quote
@@ -88,14 +91,16 @@ pub fn start_kak_comms(session: &String) -> Receiver<json::JsonValue> {
                             }
                             debug!("From editor: {}", request);
                             let parsed_request = json::parse(&request).unwrap();
-                            reader_tx.send(parsed_request).expect("Failed to send request from Kakoune");
+                            reader_tx
+                                .send(parsed_request)
+                                .expect("Failed to send request from Kakoune");
                         }
                         Err(e) => {
                             error!("Failed to read from stream: {}", e);
                         }
                     }
                 }
-                Err (e) => {
+                Err(e) => {
                     error!("Failed to accept connection: {}", e);
                 }
             }
@@ -104,4 +109,3 @@ pub fn start_kak_comms(session: &String) -> Receiver<json::JsonValue> {
 
     reader_rx
 }
-

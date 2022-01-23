@@ -1,16 +1,12 @@
-#This option dictates the command run to run the kak-dap binary.
+# This option dictates the command run to run the kak-dap binary.
 decl -hidden str dap_cmd "kak-dap -s %val{session}"
-#This option indicates whether the kak-dap binary for this session is running.
+# This option indicates whether the kak-dap binary for this session is running.
 decl -hidden bool dap_running false
-#The directory indicating where the input FIFO is located
-decl -hidden str dap_dir "/tmp/kak-dap/%val{session}"
-#This option indicates whether autojump is enabled.
-decl -hidden bool dap_autojump false
 
-#This option indicates the client in which the "stacktrace" buffer will be shown
+# This option indicates the client in which the "stacktrace" buffer will be shown
 decl str stacktraceclient
 
-#This option indicates the client in which the "variables" buffer will be shown
+# This option indicates the client in which the "variables" buffer will be shown
 decl str variablesclient
 
 set-face global DapBreakpoint red,default
@@ -19,11 +15,11 @@ set-face global DapLocation blue,default
 decl str dap_breakpoint_active_symbol "●"
 decl str dap_location_symbol "➡"
 
-#Contains all breakpoints in this format
-#line|file line|file line|file ...
+# Contains all line breakpoints in this format
+# line|file line|file line|file ...
 decl -hidden str-list dap_breakpoints_info
-#If execution is currently stopped, shows the current location in this format
-#line|file
+# If execution is currently stopped, shows the current location in this format
+# line|file
 decl -hidden str dap_location_info
 
 decl -hidden line-specs dap_breakpoints_flags
@@ -47,25 +43,25 @@ hook global BufOpenFile .* %{
 }
 
 define-command dap-setup-ui %{
-    #Setup the jump client
+    # Setup the jump client
     rename-client main
     set global jumpclient main
     
-    #Setup the stacktrace client
+    # Setup the stacktrace client
     new rename-client stacktrace
     set global stacktraceclient stacktrace
 
-    #Setup the variables client
+    # Setup the variables client
     new rename-client variables
     set global variablesclient variables
 }
 
 define-command dap-takedown-ui %{
-    #Kill the stacktrace client
+    # Kill the stacktrace client
     evaluate-commands -try-client %opt{stacktraceclient} %{
         quit!
     }
-    #Kill the variables client
+    # Kill the variables client
     evaluate-commands -try-client %opt{variablesclient} %{
         quit!
     }
@@ -74,9 +70,9 @@ define-command dap-takedown-ui %{
 define-command dap-start %{
     eval %sh{
         if [ "$kak_opt_dap_running" = false ]; then
-            #Setup the UI
+            # Setup the UI
             printf "%s\n" "dap-setup-ui"
-            #Start the kak-dap binary
+            # Start the kak-dap binary
             printf '{
             "breakpoints": "%s"
             }' "$kak_opt_dap_breakpoints_info" > /tmp/kak-dap/${kak_session}_breakpoints
@@ -87,22 +83,16 @@ define-command dap-start %{
     }
 }
 
-define-command dap-cmd -params 1..2 %{ eval %sh{
-    #echo "$1 $2" > "$kak_opt_dap_dir"/input_pipe
-    printf "%s %s" "$1" "$2" | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
-}}
-
 define-command dap-stop %{
-    #Stop the kak-dap binary
+    # Stop the kak-dap binary
     nop %sh{
         printf '{
         "cmd": "stop"
         }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
     }
-    #dap-cmd "stop"
-    #Reset the location flag
+    # Reset the location flag
     dap-reset-location
-    #Takedown the UI
+    # Takedown the UI
     dap-takedown-ui
 }
 
@@ -117,21 +107,20 @@ define-command dap-clear-breakpoint -params 2 %{
 }
 
 define-command dap-toggle-breakpoint %{ eval %sh{
-    
     if [ "$kak_opt_dap_running" = false ]; then
-        #Go through every existing breakpoint
+        # Go through every existing breakpoint
         for current in $kak_opt_dap_breakpoints_info; do
             buffer=${current#*|*}
             line=${current%%|*}
 
-            #If the current file and cursor line match this currently existing breakpoint
+            # If the current file and cursor line match this currently existing breakpoint
             if [ "$buffer" = "$kak_buffile" ] && [ "$line" = "$kak_cursor_line" ]; then
                 printf "set-option -remove global dap_breakpoints_info '%s|%s'\n" "$line" "$buffer"
                 printf "dap-refresh-breakpoints-flags %s\n" "$buffer"
                 exit
             fi
         done
-        #If we're here, we don't have this breakpoint yet
+        # If we're here, we don't have this breakpoint yet
         printf "set-option -add global dap_breakpoints_info '%s|%s'\n" "$kak_cursor_line" "$kak_buffile"
         printf "dap-refresh-breakpoints-flags %s\n" "$kak_buffile"
     else
@@ -186,13 +175,13 @@ define-command dap-reset-location %{
 
 define-command dap-jump-to-location %{
     try %{ eval %sh{
-        #Get the current location info
+        # Get the current location info
         eval set -- "$kak_quoted_opt_dap_location_info"
         [ $# -eq 0 ] && exit
-        #Extract the line and buffer
+        # Extract the line and buffer
         line="${1%%|*}"
         buffer="${1#*|*}"
-        #Edit the file at the given line, failing if it doesn't exist (it should be open already, fingers crossed)
+        # Edit the file at the given line, failing if it doesn't exist (it should be open already, fingers crossed)
         printf "edit -existing '%s' %s; exec gi" "$buffer" "$line"
     }}
 }
@@ -201,13 +190,13 @@ define-command -hidden -params 1 dap-refresh-breakpoints-flags %{
     try %{
         set-option "buffer=%arg{1}" dap_breakpoints_flags %val{timestamp}
         eval %sh{
-            #Loop through all the current breakpoints
+            # Loop through all the current breakpoints
             for current in $kak_opt_dap_breakpoints_info; do
                 buffer=${current#*|*}
-                #If the current buffer is correct
+                # If the current buffer is correct
                 if [ "$buffer" = "$1" ]; then
                     line=${current%%|*}
-            	    #Set the breakpoint flag
+            	    # Set the breakpoint flag
                     printf "set-option -add \"buffer=%s\" dap_breakpoints_flags %s|$kak_opt_dap_breakpoint_active_symbol\n" "$buffer" "$line"
                 fi
             done
@@ -217,14 +206,15 @@ define-command -hidden -params 1 dap-refresh-breakpoints-flags %{
 
 define-command -hidden -params 1 dap-refresh-location-flag %{
     try %{
+        set-option global dap_location_flags %val{timestamp}
         set-option "buffer=%arg{1}" dap_location_flags %val{timestamp}
         eval %sh{
             current=$kak_opt_dap_location_info
             buffer=${current#*|*}
-            #If the current buffer is correct
+            # If the current buffer is correct
             if [ "$buffer" = "$1" ]; then
                 line=${current%%|*}
-                #Set the location flag
+                # Set the location flag
                 printf "set-option -add \"buffer=%s\" dap_location_flags %s|$kak_opt_dap_location_symbol\n" "$buffer" "$line"
             fi
         }
@@ -232,11 +222,11 @@ define-command -hidden -params 1 dap-refresh-location-flag %{
 }
 
 #
-#Handle the variable/stacktrace buffers
+# Handle the variable/stacktrace buffers
 #
 
 define-command -hidden dap-show-stacktrace -params 1 %{
-    #Show the stack trace in the stack trace buffer
+    # Show the stack trace in the stack trace buffer
 	evaluate-commands -save-regs '"' -try-client %opt[stacktraceclient] %{
         edit! -scratch *stacktrace*
         set-register '"' %arg{1}
@@ -255,13 +245,9 @@ define-command -hidden dap-show-variables -params 1 %{
 
 define-command -hidden dap-expand-variable %{
     evaluate-commands -try-client %opt{variablesclient} %{
-        #Get variable we're expanding
+        # Get variable we're expanding
         execute-keys -save-regs '' "ghwwwW"
         set-register t %val{selection}
-        #evaluate-commands %sh{
-        #    value="${kak_reg_t}"
-        #    printf "dap-cmd expand \"%s\"\n" $value
-        #}
         nop %sh{
             value="${kak_reg_t}"
             printf '{
@@ -286,7 +272,7 @@ define-command -hidden dap-run-in-terminal -params 1.. %{
 }
 
 #
-#Responses to debug adapter responses
+# Responses to debug adapter responses
 #
 
 define-command -hidden dap-stack-trace -params 3 %{
