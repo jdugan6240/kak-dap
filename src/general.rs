@@ -19,21 +19,31 @@ pub fn initialize(ctx: &mut Context) {
 
 //Handles the "initialized" event.
 pub fn handle_initialized_event(_msg: json::JsonValue, ctx: &mut Context) {
-    //This is where we'd set the breakpoints
-    //Breakpoints hardcoded for now; TODO: receive breakpoints from editor.
-    let break_args = object! {
-        "source": {
-            "name": "test",
-            "path": "/home/jdugan/projects/kak_plugins/kak-dap/demo/python/test.py"
-        },
-        "breakpoints": [
-            {
-                "line": 10,
-            }
-        ]
-    };
-    debug_adapter_comms::do_request("setBreakpoints".to_string(), break_args, ctx);
-
+    //This is where we set the breakpoints
+    let mut requests : Vec<json::JsonValue> = vec![];
+    //Loop over the various source files we were sent
+    for (source, lines) in &ctx.breakpoint_data {
+        let mut breakpoints = json::JsonValue::new_array();
+        //Ensure we get all the lines in each file
+        for line in lines {
+            breakpoints.push(object! {
+                "line": *line,
+            }).expect("Couldn't add breakpoint to list");
+        }
+        // Construct the actual request's arguments
+        let mut break_args = object! {
+            "source": {
+                "path": source.to_string(),
+            },
+        };
+        break_args["breakpoints"] = breakpoints;
+        requests.push(break_args);
+    }
+    //Send all the breakpoint requests, one after another
+    for req in requests {
+        debug_adapter_comms::do_request("setBreakpoints".to_string(), req, ctx);
+    }
+  
     //Now, send the configurationDone request.
     debug_adapter_comms::do_request("configurationDone".to_string(), object! {}, ctx);
 }

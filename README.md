@@ -9,7 +9,7 @@ This allows Kakoune to support debugging in a variety of different languages, pr
 
 - Launch debug adapter (currently hardcoded)
 - Launch debuggee in external terminal (Kakoune doesn't have an integrated terminal)
-- Stop at breakpoints (currently hardcoded)
+- Stop at breakpoints
 - Continue/step/next
 - Call stack display (current thread only)
 - Heirarchical variable display

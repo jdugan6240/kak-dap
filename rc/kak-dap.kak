@@ -73,6 +73,7 @@ define-command dap-start %{
             # Setup the UI
             printf "%s\n" "dap-setup-ui"
             # Start the kak-dap binary
+            mkdir /tmp/kak-dap
             printf '{
             "breakpoints": "%s"
             }' "$kak_opt_dap_breakpoints_info" > /tmp/kak-dap/${kak_session}_breakpoints
