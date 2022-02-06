@@ -91,10 +91,6 @@ define-command dap-stop %{
         "cmd": "stop"
         }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
     }
-    # Reset the location flag
-    dap-reset-location
-    # Takedown the UI
-    dap-takedown-ui
 }
 
 define-command dap-set-breakpoint -params 2 %{

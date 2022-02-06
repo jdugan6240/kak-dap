@@ -1,4 +1,3 @@
-use std::process;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
@@ -99,8 +98,10 @@ pub fn start(session: &String, breakpoints: JsonValue) {
 //Handle events from the debug adapter.
 pub fn handle_adapter_event(msg: json::JsonValue, ctx: &mut Context) {
     match msg["event"].to_string().as_str() {
+        "exited" => general::goodbye(ctx),
         "initialized" => general::handle_initialized_event(msg, ctx),
         "stopped" => stack_trace::handle_stopped_event(msg, ctx),
+        "terminated" => general::goodbye(ctx),
         _ => (),
     };
 }
@@ -121,9 +122,8 @@ pub fn handle_adapter_response(msg: json::JsonValue, ctx: &mut Context) {
 pub fn parse_cmd(cmd: json::JsonValue, ctx: &mut Context) {
     //Depending on the command given, act accordingly
     if cmd["cmd"] == "stop" {
-        kakoune::kak_command("set-option global dap_running false".to_string(), ctx);
-        kakoune::clean_socket(&ctx.session);
-        process::exit(0);
+        //We currently rely on the adapter terminating the debuggee once stdio streams are closed
+        general::goodbye(ctx);
     } else if cmd["cmd"] == "continue" {
         //Send a continue command to the debugger
         let continue_args = object! {

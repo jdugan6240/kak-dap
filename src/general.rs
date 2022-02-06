@@ -3,6 +3,7 @@ use crate::debug_adapter_comms;
 use crate::kakoune;
 
 use json::object;
+use std::process;
 
 //Initializes the debug adapter.
 pub fn initialize(ctx: &mut Context) {
@@ -93,4 +94,13 @@ pub fn handle_evaluate_response(msg: json::JsonValue, ctx: &mut Context) {
     cmd.push_str(&kakoune::editor_escape(&typ.to_string()));
     cmd.push_str(" '");
     kakoune::kak_command(cmd, &ctx);
+}
+
+//Tries to end kak-dap gracefully.
+pub fn goodbye(ctx: &mut Context) {
+    kakoune::kak_command("try %{ eval -client %opt{jumpclient} %{ dap-reset-location }}".to_string(), ctx);
+    kakoune::kak_command("try %{ eval -client %opt{jumpclient} %{ dap-takedown-ui }}".to_string(), ctx);
+    kakoune::kak_command("set-option global dap_running false".to_string(), ctx);
+    kakoune::clean_socket(&ctx.session);
+    process::exit(0);
 }

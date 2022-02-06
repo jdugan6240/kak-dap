@@ -17,6 +17,7 @@ pub fn kak_command(command: String, ctx: &Context) {
         .spawn()
         .unwrap();
     let child_stdin = child.stdin.as_mut().unwrap();
+    debug!("To editor: {}", command);
     child_stdin
         .write_all(command.as_bytes())
         .expect("Failed to write to stdin of child process.");
