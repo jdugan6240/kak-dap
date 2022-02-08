@@ -7,12 +7,12 @@ use std::thread;
 
 use crate::context::*;
 
-//Start the debug adapter process and connect to its stdio.
+// Start the debug adapter process and connect to its stdio.
 pub fn debug_start(
     cmd: &str,
     args: &[String],
 ) -> (Sender<json::JsonValue>, Receiver<json::JsonValue>) {
-    //Spawn debug adapter process and capture stdio
+    // Spawn debug adapter process and capture stdio
     let mut child = Command::new(cmd)
         .args(args)
         .stdin(Stdio::piped())
@@ -21,11 +21,11 @@ pub fn debug_start(
         .spawn()
         .expect("Failed to start debug adapter");
 
-    //Obtain reader and writer objects for the child process
+    // Obtain reader and writer objects for the child process
     let writer = BufWriter::new(child.stdin.take().expect("Failed to open stdin"));
     let reader = BufReader::new(child.stdout.take().expect("Failed to open stdout"));
 
-    //Tracing debug adapter errors
+    // Tracing debug adapter errors
     let mut stderr = BufReader::new(child.stderr.take().expect("Failed to open stderr"));
     thread::spawn(move || loop {
         let mut buf = String::new();
@@ -50,10 +50,10 @@ pub fn debug_start(
     (writer_tx, reader_rx)
 }
 
-//Thread to read the stdout of the debug adapter process.
+// Thread to read the stdout of the debug adapter process.
 fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Result<()> {
-    //Store headers of message being received
-    //Used to determine if Content-Length header has been received
+    // Store headers of message being received
+    // Used to determine if Content-Length header has been received
     let mut headers = HashMap::new();
     loop {
         headers.clear();
@@ -72,13 +72,13 @@ fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Re
             }
             headers.insert(parts[0].to_string(), parts[1].to_string());
         }
-        //Get the length of the message we are receiving
+        // Get the length of the message we are receiving
         let content_len = headers
             .get("Content-Length")
             .expect("Failed to find Content-Length header")
             .parse()
             .expect("Failed to parse Content-Length header");
-        //Now read that many characters to obtain the message
+        // Now read that many characters to obtain the message
         let mut content = vec![0; content_len];
         reader.read_exact(&mut content)?;
         let msg = String::from_utf8(content).expect("Failed to read content as UTF-8 string");
@@ -91,7 +91,7 @@ fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Re
     }
 }
 
-//Thread to write to the stdin of the debug adapter process.
+// Thread to write to the stdin of the debug adapter process.
 fn writer_loop(mut writer: impl Write, rx: &Receiver<json::JsonValue>) -> io::Result<()> {
     for request in rx {
         let request = request.dump();
@@ -106,8 +106,8 @@ fn writer_loop(mut writer: impl Write, rx: &Receiver<json::JsonValue>) -> io::Re
     Ok(())
 }
 
-//Sends a request to the debug adapter.
-pub fn do_request(cmd: String, args: json::JsonValue, ctx: &mut Context) {
+// Sends a request to the debug adapter.
+pub fn do_request(cmd: &str, args: json::JsonValue, ctx: &mut Context) {
     let msg = object! {
         "type": "request",
         "seq": ctx.next_req_id(),
@@ -119,18 +119,18 @@ pub fn do_request(cmd: String, args: json::JsonValue, ctx: &mut Context) {
 
     debug!("To debug adapter: {}", msg_cln);
 
-    //Send it to the debug adapter
+    // Send it to the debug adapter
     ctx.debg_apt_tx
         .send(msg)
         .expect("Failed to send message to debug adapter");
 
-    //Add it to the pending requests list
+    // Add it to the pending requests list
     ctx.cur_requests.push(msg_cln);
 }
 
-//Sends a response to the debug adapter.
-//Currently, only one response is sent by the client: the response to the runInTerminal command.
-pub fn do_response(cmd: String, body: json::JsonValue, ctx: &mut Context) {
+// Sends a response to the debug adapter.
+// Currently, only one response is sent by the client: the response to the runInTerminal command.
+pub fn do_response(cmd: &str, body: json::JsonValue, ctx: &mut Context) {
     let msg = object! {
         "type": "response",
         "seq": ctx.next_req_id(),
@@ -140,7 +140,7 @@ pub fn do_response(cmd: String, body: json::JsonValue, ctx: &mut Context) {
         "body": body
     };
     debug!("To debug adapter: {}", msg);
-    //Send it to the debug adapter
+    // Send it to the debug adapter
     ctx.debg_apt_tx
         .send(msg)
         .expect("Failed to send response to debug adapter");

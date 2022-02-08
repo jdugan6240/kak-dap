@@ -7,8 +7,8 @@ use std::{env, fs, path, thread};
 
 use crate::context::*;
 
-//This function sends a Kakoune command to the given Kakoune session.
-pub fn kak_command(command: String, ctx: &Context) {
+// This function sends a Kakoune command to the given Kakoune session.
+pub fn kak_command(command: &str, ctx: &Context) {
     let mut child = Command::new("kak")
         .args(&["-p", &ctx.session])
         .stdin(Stdio::piped())
@@ -23,17 +23,17 @@ pub fn kak_command(command: String, ctx: &Context) {
         .expect("Failed to write to stdin of child process.");
 }
 
-/// Escape Kakoune string wrapped into single quote
+// Escape Kakoune string wrapped into single quote
 pub fn editor_escape(s: &str) -> String {
     s.replace("'", "''")
 }
 
-//This function creates the kak-dap temp dir.
+// This function creates the kak-dap temp dir.
 pub fn temp_dir() -> path::PathBuf {
     let mut path = env::temp_dir();
     path.push("kak-dap");
     let old_mask = unsafe { libc::umask(0) };
-    //Ignoring possible error during $TMPDIR/kak-dap creation to have a chance to restore umask.
+    // Ignoring possible error during $TMPDIR/kak-dap creation to have a chance to restore umask.
     let _ = fs::DirBuilder::new()
         .recursive(true)
         .mode(0o1777)
@@ -41,15 +41,10 @@ pub fn temp_dir() -> path::PathBuf {
     unsafe {
         libc::umask(old_mask);
     }
-    fs::DirBuilder::new()
-        .recursive(true)
-        .mode(0o700)
-        .create(&path)
-        .unwrap();
     path
 }
 
-//This function removes the socket file.
+// This function removes the socket file.
 pub fn clean_socket(session: &String) {
     let path = temp_dir();
     let sock_path = path.join(session);
@@ -58,16 +53,16 @@ pub fn clean_socket(session: &String) {
     };
 }
 
-//This function spawns the thread that listens for commands on a socket
-//and issues commands to the Kakoune session that spawned us.
+// This function spawns the thread that listens for commands on a socket
+// and issues commands to the Kakoune session that spawned us.
 pub fn start_kak_comms(session: &String) -> Receiver<json::JsonValue> {
     let (reader_tx, reader_rx) = bounded(1024);
-    //Create socket
+    // Create socket
     let mut path = temp_dir();
     path.push(session);
     if path.exists() {
         let sock_path = path.clone();
-        //Clean up dead kak-dap session
+        // Clean up dead kak-dap session
         if fs::remove_file(sock_path).is_err() {
             error!("Failed to clean up dead kak-dap session");
         }
@@ -79,7 +74,7 @@ pub fn start_kak_comms(session: &String) -> Receiver<json::JsonValue> {
             return reader_rx;
         }
     };
-    //Begin socket processing
+    // Begin socket processing
     thread::spawn(move || {
         for stream in listener.incoming() {
             match stream {

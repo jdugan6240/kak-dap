@@ -5,25 +5,24 @@ use crate::types::{Scope, Variable};
 
 use json::object;
 
-//Handles the "scopes" response.
+// Handles the "scopes" response.
 pub fn handle_scopes_response(msg: json::JsonValue, ctx: &mut Context) {
-    //Update the "scopes" array in the context
+    // Update the "scopes" array in the context
     ctx.scopes.clear();
     ctx.variables.clear();
     let scopes_members = msg["body"]["scopes"].members();
     for val in scopes_members {
         let value = val.clone();
-        //Enter this scope in the scopes array
+        // Enter this scope in the scopes array
         let scope = Scope {
             variable_reference: val["variablesReference"]
                 .to_string()
                 .parse::<u64>()
                 .unwrap(),
-            line_no: 0,
             contents: value,
         };
         ctx.scopes.push(scope);
-        //Request variables for this scope
+        // Request variables for this scope
         let var_ref = val["variablesReference"]
             .to_string()
             .parse::<u64>()
@@ -32,26 +31,26 @@ pub fn handle_scopes_response(msg: json::JsonValue, ctx: &mut Context) {
             "variablesReference": var_ref
         };
         ctx.var_reqs += 1;
-        debug_adapter_comms::do_request("variables".to_string(), var_args, ctx);
+        debug_adapter_comms::do_request("variables", var_args, ctx);
     }
 }
 
-//Handles the "variables" response.
+// Handles the "variables" response.
 pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
     ctx.var_reqs -= 1;
-    //Find the variables request that spawned this response
+    // Find the variables request that spawned this response
     let cur_requests = &ctx.cur_requests.clone();
     let val_req = cur_requests
         .into_iter()
         .find(|x| &x["seq"] == &msg["request_seq"])
         .unwrap();
 
-    //Loop over every variable in this response
+    // Loop over every variable in this response
     let variables = &msg["body"]["variables"];
     let variables_members = variables.members();
     for val in variables_members {
         let val_cln = val.clone();
-        //Construct an Expandable instance containing this variable's properties
+        // Construct an Expandable instance containing this variable's properties
         let variable = Variable {
             variable_reference: val["variablesReference"]
                 .to_string()
@@ -61,7 +60,6 @@ pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
                 .to_string()
                 .parse::<u64>()
                 .unwrap(),
-            line_no: 0,
             contents: val_cln,
         };
         ctx.variables.push(variable);
@@ -72,7 +70,7 @@ pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
     }
 }
 
-//Constructs the command that renders all the scopes and variables in the variables buffer.
+// Constructs the command that renders all the scopes and variables in the variables buffer.
 pub fn serialize_variables(ctx: &mut Context) {
     let mut cmd = "dap-show-variables 'Variables:\n\n".to_string();
     let mut cmd_val = "".to_string();
@@ -96,10 +94,10 @@ pub fn serialize_variables(ctx: &mut Context) {
     }
     cmd.push_str(&kakoune::editor_escape(&cmd_val));
     cmd.push_str("'");
-    kakoune::kak_command(cmd, ctx);
+    kakoune::kak_command(&cmd, ctx);
 }
 
-//Constructs the command that renders all the child variables of the given variable reference in the variables buffer.
+// Constructs the command that renders all the child variables of the given variable reference in the variables buffer.
 pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
     let mut val = "".to_string();
     for var in &ctx.variables {
@@ -107,10 +105,10 @@ pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
             for _i in 0..indent {
                 val.push_str(" ");
             }
-            //If this variable is expandable
+            // If this variable is expandable
             if var.variable_reference > 0 {
                 let mut icon = "+";
-                //Determine if this variable has any child variables currently
+                // Determine if this variable has any child variables currently
                 for varr in &ctx.variables {
                     if varr.par_variable_reference == var.variable_reference {
                         icon = "-";
@@ -136,17 +134,17 @@ pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
     val
 }
 
-//Handles the "expand" command from the editor.
+// Handles the "expand" command from the editor.
 pub fn expand_variable(cmd: &String, ctx: &mut Context) {
     let mut var = cmd.to_string();
     var = var.trim().to_string();
-    //If the string starts with a '<', this is an expandable variable
+    // If the string starts with a '<', this is an expandable variable
     let first_char = var.chars().next().unwrap();
     if first_char == '<' {
-        //Extract the variable reference
+        // Extract the variable reference
         var = var[1..].to_string();
         let var_ref = var.parse::<u64>().unwrap();
-        //If the variables list contains any child variables of this variable reference, then it's expanded
+        // If the variables list contains any child variables of this variable reference, then it's expanded
         let mut is_expanded = false;
         for varr in &ctx.variables {
             if varr.par_variable_reference == var_ref {
@@ -154,15 +152,15 @@ pub fn expand_variable(cmd: &String, ctx: &mut Context) {
                 break;
             }
         }
-        //If this variable isn't expanded, then expand it
+        // If this variable isn't expanded, then expand it
         if !is_expanded {
             let var_args = object! {
                 "variablesReference": var_ref
             };
             ctx.var_reqs += 1;
-            debug_adapter_comms::do_request("variables".to_string(), var_args, ctx);
+            debug_adapter_comms::do_request("variables", var_args, ctx);
         }
-        //Otherwise, collapse it
+        // Otherwise, collapse it
         else {
             ctx.variables
                 .retain(|x| x.par_variable_reference != var_ref);

@@ -3,6 +3,7 @@ extern crate clap;
 extern crate log;
 extern crate simplelog;
 
+mod breakpoints;
 mod context;
 mod controller;
 mod debug_adapter_comms;
@@ -20,7 +21,7 @@ use std::fs::File;
 use json::object;
 
 fn main() {
-    //Get command line arguments
+    // Get command line arguments
     let matches = App::new("Kak-DAP")
         .version(crate_version!())
         .arg(
@@ -40,10 +41,10 @@ fn main() {
         )
         .get_matches();
 
-    //Extract the current session
+    // Extract the current session
     let session: String = matches.value_of("session").map(str::to_string).unwrap();
 
-    //Initialize the logger
+    // Initialize the logger
     if let Some(log_path) = matches.value_of("log") {
         WriteLogger::init(
             LevelFilter::Trace,
@@ -61,7 +62,7 @@ fn main() {
         .unwrap();
     }
 
-    //If we are receiving breakpoints from the breakpoints file, get them
+    // If we are receiving breakpoints from the breakpoints file, get them
     let mut breakpoints = object! {};
     let mut path = kakoune::temp_dir();
     path.push(format!("{}_breakpoints", session));
@@ -79,7 +80,7 @@ fn main() {
         }
     }
 
-    //Set the dap_running option and kickstart the whole kit and kaboodle
+    // Set the dap_running option and kickstart the whole kit and kaboodle
     debug!("Starting kak-dap session");
     controller::start(&session, breakpoints);
 }

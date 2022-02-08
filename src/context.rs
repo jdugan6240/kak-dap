@@ -3,29 +3,29 @@ use std::collections::HashMap;
 
 use crate::types::{Scope, Variable};
 
-//Struct with which to carry around our "global" variables
+// Struct with which to carry around our "global" variables
 pub struct Context {
-    //Handle to write to the debug adapter
+    // Handle to write to the debug adapter
     pub debg_apt_tx: Sender<json::JsonValue>,
-    //The sequence ID of the next request
+    // The sequence ID of the next request
     pub cur_req_id: u64,
-    //The Kakoune session that spawned us
+    // The Kakoune session that spawned us
     pub session: String,
-    //The sequence ID of the last reverseRequest from the adapter
+    // The sequence ID of the last reverseRequest from the adapter
     pub last_adapter_seq: u64,
-    //The thread that last triggered the Stopped event
+    // The thread that last triggered the Stopped event
     pub cur_thread: u64,
-    //The scopes found at the last Stopped event
+    // The scopes found at the last Stopped event
     pub scopes: Vec<Scope>,
-    //The variables currently stored in the variable heirarchy
+    // The variables currently stored in the variable heirarchy
     pub variables: Vec<Variable>,
-    //The number of Variables requests we still need to service
+    // The number of Variables requests we still need to service
     pub var_reqs: u64,
-    //The current stack frame.
+    // The current stack frame.
     pub cur_stack: u64,
-    //The requests we have sent to the adapter
+    // The requests we have sent to the adapter
     pub cur_requests: Vec<json::JsonValue>,
-    //The breakpoints passed to the kak-dap session
+    // The breakpoints passed to the kak-dap session
     pub breakpoint_data: HashMap<String, Vec<u64>>,
 }
 
