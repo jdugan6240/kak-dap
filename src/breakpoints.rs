@@ -4,6 +4,10 @@ use crate::debug_adapter_comms;
 use json::{JsonValue, object};
 
 pub fn process_breakpoints(ctx: &mut Context, breakpoints: JsonValue) {
+    // If we have no breakpoints, don't do anything
+    if breakpoints["breakpoints"].is_empty() {
+        return;
+    }
     let raw_breakpoints = breakpoints["breakpoints"].to_string();
     // Split passed value along spaces
     let split = raw_breakpoints.split_whitespace();
