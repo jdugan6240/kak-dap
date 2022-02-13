@@ -2,6 +2,7 @@ use crossbeam_channel::{bounded, Receiver};
 use std::io::{Read, Write};
 use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::net::UnixListener;
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::{env, fs, path, thread};
 
@@ -104,4 +105,32 @@ pub fn start_kak_comms(session: &String) -> Receiver<json::JsonValue> {
     });
 
     reader_rx
+}
+
+// Gets the path the current debug configuration is located at
+pub fn config_path() -> Option<String> {
+    // If the CUR_FILE environment variable exists, use that
+    // Otherwise, use the working directory
+    let mut cur_file : String = env::current_dir().unwrap().to_string_lossy().to_string();
+    if env::var("CUR_FILE").is_ok() {
+        cur_file = env::var("CUR_FILE").unwrap();
+    }
+    let mut src = PathBuf::from(cur_file);
+    while !src.is_dir() {
+        src.pop();
+    }
+    // Look up through the heirarchy to find the config file
+    loop {
+        info!("Checking for file {}", src.join(".kak-dap.json").to_str().unwrap());
+        let exists = std::path::Path::new(src.join(".kak-dap.json").to_str().unwrap()).exists();
+        if exists {
+            let root_dir = src.join(".kak-dap.json").to_str().unwrap().to_string();
+            info!("Found config at {}", root_dir);
+            return Some(root_dir);
+        }
+        if !src.pop() {
+            break;
+        }
+    }
+    return None
 }

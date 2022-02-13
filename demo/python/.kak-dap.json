@@ -1,0 +1,18 @@
+{
+  // The binary run to start the debug adapter
+  "adapter": "python",
+  
+  // The arguments to the debug adapter, if any
+  "adapter_args": ["${HOME}/debugpy/src/adapter"],
+  
+  // The arguments sent to the "launch" request
+  // This will depend on the debug adapter being used
+  "launch_args": {
+    "program": "${CUR_DIR}/test.py",
+    "args": [],
+    "stopOnEntry": true,
+    "console": "externalTerminal",
+    "debugOptions": [],
+    "cwd": "${CUR_DIR}"
+  }
+}

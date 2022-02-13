@@ -13,6 +13,7 @@ use crate::variables;
 
 pub fn start(session: &String, breakpoints: JsonValue) {
     let kakoune_rx = kakoune::start_kak_comms(session);
+    kakoune::config_path();
     // Begin communication with the debug adapter
     // Debug adapter hardcoded for now; TODO: make configurable
     let (adapter_tx, adapter_rx) = debug_adapter_comms::debug_start(

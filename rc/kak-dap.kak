@@ -77,6 +77,7 @@ define-command dap-start %{
             printf '{
             "breakpoints": "%s"
             }' "$kak_opt_dap_breakpoints_info" > /tmp/kak-dap/${kak_session}_breakpoints
+            export CUR_FILE=$kak_buffile
             (eval "${kak_opt_dap_cmd}") > /dev/null 2>&1 < /dev/null &
         else
             printf "echo %s\n" "kak-dap already running"
