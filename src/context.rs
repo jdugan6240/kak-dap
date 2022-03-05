@@ -3,6 +3,8 @@ use std::collections::HashMap;
 
 use crate::types::{Scope, Variable};
 
+use json::{object, JsonValue};
+
 // Struct with which to carry around our "global" variables
 pub struct Context {
     // Handle to write to the debug adapter
@@ -27,6 +29,8 @@ pub struct Context {
     pub cur_requests: Vec<json::JsonValue>,
     // The breakpoints passed to the kak-dap session
     pub breakpoint_data: HashMap<String, Vec<u64>>,
+    // The debug configuration
+    pub debug_cfg: JsonValue
 }
 
 impl Context {
@@ -43,6 +47,7 @@ impl Context {
             cur_stack: 0,
             cur_requests: vec![],
             breakpoint_data: HashMap::new(),
+            debug_cfg: object!{},
         }
     }
 

@@ -1,0 +1,15 @@
+{
+  // The binary run to start the debug adapter
+  "adapter": "node",
+  
+  // The arguments to the debug adapter, if any
+  "adapter_args": ["${HOME}/native-debug/extension/out/src/lldb.js"],
+  
+  // The arguments sent to the "launch" request
+  // This will depend on the debug adapter being used
+  "launch_args": {
+    "target": "${CUR_DIR}/test_c",
+    "cwd": "${CUR_DIR}",
+    "terminal": "alacritty"
+  }
+}

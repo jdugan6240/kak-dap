@@ -4,6 +4,7 @@ use std::thread;
 use json::{object, JsonValue};
 
 use crate::breakpoints;
+use crate::config;
 use crate::context::*;
 use crate::debug_adapter_comms;
 use crate::general;
@@ -13,12 +14,30 @@ use crate::variables;
 
 pub fn start(session: &String, breakpoints: JsonValue) {
     let kakoune_rx = kakoune::start_kak_comms(session);
-    kakoune::config_path();
+    let config : JsonValue;
+    // Load the debug configuration
+    let config_path = config::config_path();
+    if config_path.is_none() {
+        // No configuration found; bail
+        error!("Couldn't find configuration");
+        general::goodbye(session);
+    }
+    let pot_config = config::get_config(&config_path.unwrap());
+    if pot_config.is_none() {
+        error!("Invalid configuration");
+        // Configuration isn't valid JSON; bail
+        general::goodbye(session);
+    }
+    config = pot_config.unwrap();
+    debug!("Debug configuration: {}", config.dump());
     // Begin communication with the debug adapter
-    // Debug adapter hardcoded for now; TODO: make configurable
+    let mut adapter_args : Vec<String> = vec![];
+    for val in config["adapter_args"].members() {
+        adapter_args.push(val.to_string());
+    }
     let (adapter_tx, adapter_rx) = debug_adapter_comms::debug_start(
-        "python",
-        &["/home/jdugan/debugpy/src/debugpy/adapter".to_string()],
+        &config["adapter"].to_string(),
+        &adapter_args,
     );
 
     let cxt_src = Arc::new(Mutex::new(Context::new(adapter_tx, session.to_string())));
@@ -50,7 +69,8 @@ pub fn start(session: &String, breakpoints: JsonValue) {
     let ctx = Arc::clone(&cxt_src);
     {
         let mut ctx = ctx.lock().expect("Failed to lock context");
-        kakoune::kak_command("set-option global dap_running true", &ctx);
+        ctx.debug_cfg = config;
+        kakoune::kak_command("set-option global dap_running true", &ctx.session);
         breakpoints::process_breakpoints(&mut ctx, breakpoints);
         general::initialize(&mut ctx);
     }
@@ -65,10 +85,10 @@ pub fn start(session: &String, breakpoints: JsonValue) {
 // Handle events from the debug adapter.
 pub fn handle_adapter_event(msg: json::JsonValue, ctx: &mut Context) {
     match msg["event"].to_string().as_str() {
-        "exited" => general::goodbye(ctx),
+        "exited" => general::goodbye(&ctx.session),
         "initialized" => breakpoints::handle_initialized_event(msg, ctx),
         "stopped" => stack_trace::handle_stopped_event(msg, ctx),
-        "terminated" => general::goodbye(ctx),
+        "terminated" => general::goodbye(&ctx.session),
         _ => (),
     };
 }
@@ -90,19 +110,19 @@ pub fn parse_cmd(cmd: json::JsonValue, ctx: &mut Context) {
     // Depending on the command given, act accordingly
     if cmd["cmd"] == "stop" {
         // We currently rely on the adapter terminating the debuggee once stdio streams are closed
-        general::goodbye(ctx);
+        general::goodbye(&ctx.session);
     } else if cmd["cmd"] == "continue" {
         // Send a continue command to the debugger
         let continue_args = object! {
             "threadId": 1
         };
-        debug_adapter_comms::do_request("continue", continue_args, ctx);
+        debug_adapter_comms::do_request("continue", &continue_args, ctx);
     } else if cmd["cmd"] == "next" {
         // Send a next command to the debugger
         let next_args = object! {
             "threadId": 1
         };
-        debug_adapter_comms::do_request("next", next_args, ctx);
+        debug_adapter_comms::do_request("next", &next_args, ctx);
     } else if cmd["cmd"] == "pid" {
         // Send response to debug adapter
         debug_adapter_comms::do_response("runInTerminal", object! {}, ctx);
@@ -111,13 +131,13 @@ pub fn parse_cmd(cmd: json::JsonValue, ctx: &mut Context) {
         let step_in_args = object! {
             "threadId": 1
         };
-        debug_adapter_comms::do_request("stepIn", step_in_args, ctx);
+        debug_adapter_comms::do_request("stepIn", &step_in_args, ctx);
     } else if cmd["cmd"] == "stepOut" {
         // Send a stepIn command to the debugger
         let step_out_args = object! {
             "threadId": 1
         };
-        debug_adapter_comms::do_request("stepOut", step_out_args, ctx);
+        debug_adapter_comms::do_request("stepOut", &step_out_args, ctx);
     } else if cmd["cmd"] == "evaluate" {
         // Extract the expression and send an "evaluate" command to the debugger
         let expr = cmd["args"].to_string();
@@ -125,7 +145,7 @@ pub fn parse_cmd(cmd: json::JsonValue, ctx: &mut Context) {
             "expression": expr,
             "frameId": ctx.cur_stack
         };
-        debug_adapter_comms::do_request("evaluate", eval_args, ctx);
+        debug_adapter_comms::do_request("evaluate", &eval_args, ctx);
     } else if cmd["cmd"] == "expand" {
         variables::expand_variable(&cmd["args"].to_string(), ctx);
     }

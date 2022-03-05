@@ -56,9 +56,9 @@ pub fn handle_initialized_event(_msg: json::JsonValue, ctx: &mut Context) {
     }
     // Send all the breakpoint requests, one after another
     for req in requests {
-        debug_adapter_comms::do_request("setBreakpoints", req, ctx);
+        debug_adapter_comms::do_request("setBreakpoints", &req, ctx);
     }
   
     // Now, send the configurationDone request.
-    debug_adapter_comms::do_request("configurationDone", object! {}, ctx);
+    debug_adapter_comms::do_request("configurationDone", &object! {}, ctx);
 }

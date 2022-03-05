@@ -15,7 +15,7 @@ pub fn initialize(ctx: &mut Context) {
         "pathFormat": "path",
         "supportsRunInTerminalRequest": true,
     };
-    debug_adapter_comms::do_request("initialize", initialize_args, ctx);
+    debug_adapter_comms::do_request("initialize", &initialize_args, ctx);
 }
 
 
@@ -23,15 +23,9 @@ pub fn initialize(ctx: &mut Context) {
 pub fn handle_initialize_response(_msg: json::JsonValue, ctx: &mut Context) {
     // We need to send the launch request before the breakpoints.
     // For background: https://github.com/microsoft/vscode/issues/4902
-    let launch_args = object! {
-        "program": "/home/jdugan/projects/kak_plugins/kak-dap/demo/python/test.py",
-        "args": [],
-        "stopOnEntry": false,
-        "console": "externalTerminal",
-        "debugOptions": [],
-        "cwd": "/home/jdugan/projects/kak_plugins/kak-dap/demo/python"
-    };
-    debug_adapter_comms::do_request("launch", launch_args, ctx);
+    let launch_args : &json::JsonValue = &ctx.debug_cfg["launch_args"];
+    let launch_args_cln = launch_args.clone();
+    debug_adapter_comms::do_request("launch", &launch_args_cln, ctx);
 }
 
 // Handles the "runInTerminal" request.
@@ -48,7 +42,7 @@ pub fn handle_run_in_terminal_request(msg: json::JsonValue, ctx: &mut Context) {
         cmd.push_str(&val.to_string());
         cmd.push_str("\" ");
     }
-    kakoune::kak_command(&cmd, &ctx);
+    kakoune::kak_command(&cmd, &ctx.session);
 }
 
 //Handles the "evaluate" response.
@@ -63,14 +57,14 @@ pub fn handle_evaluate_response(msg: json::JsonValue, ctx: &mut Context) {
     cmd.push_str(" ' ' ");
     cmd.push_str(&kakoune::editor_escape(&typ.to_string()));
     cmd.push_str(" '");
-    kakoune::kak_command(&cmd, &ctx);
+    kakoune::kak_command(&cmd, &ctx.session);
 }
 
 //Tries to end kak-dap gracefully.
-pub fn goodbye(ctx: &mut Context) {
-    kakoune::kak_command("try %{ eval -client %opt{jumpclient} %{ dap-reset-location }}", ctx);
-    kakoune::kak_command("try %{ eval -client %opt{jumpclient} %{ dap-takedown-ui }}", ctx);
-    kakoune::kak_command("set-option global dap_running false", ctx);
-    kakoune::clean_socket(&ctx.session);
+pub fn goodbye(session: &str) {
+    kakoune::kak_command("try %{ eval -client %opt{jumpclient} %{ dap-reset-location }}", session);
+    kakoune::kak_command("try %{ eval -client %opt{jumpclient} %{ dap-takedown-ui }}", session);
+    kakoune::kak_command("set-option global dap_running false", session);
+    kakoune::clean_socket(&session.to_string());
     process::exit(0);
 }

@@ -31,7 +31,7 @@ pub fn handle_scopes_response(msg: json::JsonValue, ctx: &mut Context) {
             "variablesReference": var_ref
         };
         ctx.var_reqs += 1;
-        debug_adapter_comms::do_request("variables", var_args, ctx);
+        debug_adapter_comms::do_request("variables", &var_args, ctx);
     }
 }
 
@@ -94,7 +94,7 @@ pub fn serialize_variables(ctx: &mut Context) {
     }
     cmd.push_str(&kakoune::editor_escape(&cmd_val));
     cmd.push_str("'");
-    kakoune::kak_command(&cmd, ctx);
+    kakoune::kak_command(&cmd, &ctx.session);
 }
 
 // Constructs the command that renders all the child variables of the given variable reference in the variables buffer.
@@ -158,7 +158,7 @@ pub fn expand_variable(cmd: &String, ctx: &mut Context) {
                 "variablesReference": var_ref
             };
             ctx.var_reqs += 1;
-            debug_adapter_comms::do_request("variables", var_args, ctx);
+            debug_adapter_comms::do_request("variables", &var_args, ctx);
         }
         // Otherwise, collapse it
         else {

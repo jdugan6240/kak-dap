@@ -4,6 +4,7 @@ extern crate log;
 extern crate simplelog;
 
 mod breakpoints;
+mod config;
 mod context;
 mod controller;
 mod debug_adapter_comms;
@@ -17,6 +18,7 @@ use clap::{crate_version, App, Arg};
 use simplelog::*;
 use std::fs;
 use std::fs::File;
+use std::panic;
 
 use json::object;
 
@@ -40,6 +42,10 @@ fn main() {
                 .takes_value(true),
         )
         .get_matches();
+
+    panic::set_hook(Box::new(|panic_info| {
+        error!("panic: {}", panic_info);
+    }));
 
     // Extract the current session
     let session: String = matches.value_of("session").map(str::to_string).unwrap();

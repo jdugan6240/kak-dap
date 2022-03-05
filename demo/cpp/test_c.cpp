@@ -1,38 +1,32 @@
 #include <iostream>
+namespace Test {
+struct TestStruct {
+  bool isInt;
 
-namespace Test
-{
-      struct TestStruct
-        {
-                bool  isInt;
+  union {
+    int somethingInt;
+    char somethingChar;
+  } something;
+};
+;
 
-                    union {
-                              int somethingInt;
-                                    char somethingChar;
-                    } something;
-        };;
+TestStruct _t;
 
-          TestStruct _t;
-
-            void bar( TestStruct b )
-            {
-                    std::string s;
-                        s += b.isInt ? b.something.somethingInt : b.something.somethingChar;
-                            std::cout << s << '\n';
-            }
-
-              void foo( TestStruct m )
-              {
-                      TestStruct t{ true, 11 };
-                          bar( t );
-              }
+void bar(TestStruct b) {
+  std::string s;
+  s += b.isInt ? b.something.somethingInt : b.something.somethingChar;
+  std::cout << s << '\n';
 }
 
+void foo(TestStruct m) {
+  TestStruct t{true, 11};
+  bar(t);
+}
+} // namespace Test
 
-int main ( int argc, char ** argv )
-{
-      int x{ 10 };
+int main(int argc, char **argv) {
+  int x{10};
 
-        Test::TestStruct t{ true, 99 };
-          foo( t );
+  Test::TestStruct t{true, 99};
+  foo(t);
 }

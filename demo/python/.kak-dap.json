@@ -3,7 +3,7 @@
   "adapter": "python",
   
   // The arguments to the debug adapter, if any
-  "adapter_args": ["${HOME}/debugpy/src/adapter"],
+  "adapter_args": ["${HOME}/debugpy/src/debugpy/adapter"],
   
   // The arguments sent to the "launch" request
   // This will depend on the debug adapter being used

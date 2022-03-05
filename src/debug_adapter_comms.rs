@@ -60,7 +60,8 @@ fn reader_loop(mut reader: impl BufRead, tx: &Sender<json::JsonValue>) -> io::Re
         loop {
             let mut header = String::new();
             if reader.read_line(&mut header)? == 0 {
-                return Err(Error::new(ErrorKind::Other, "Failed to read from adapter"));
+                debug!("Debug adapter closed pipe, stopping reading");
+                return Ok(());
             }
             let header = header.trim();
             if header.is_empty() {
@@ -107,12 +108,13 @@ fn writer_loop(mut writer: impl Write, rx: &Receiver<json::JsonValue>) -> io::Re
 }
 
 // Sends a request to the debug adapter.
-pub fn do_request(cmd: &str, args: json::JsonValue, ctx: &mut Context) {
+pub fn do_request(cmd: &str, args: &json::JsonValue, ctx: &mut Context) {
+    let args_cln = args.clone();
     let msg = object! {
         "type": "request",
         "seq": ctx.next_req_id(),
         "command": cmd,
-        "arguments": args
+        "arguments": args_cln
     };
 
     let msg_cln = msg.clone();
