@@ -1,6 +1,6 @@
 [package]
 name = "kak-dap"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["James Dugan <jdugan6240@vivaldi.net>"]
 edition = "2018"
 

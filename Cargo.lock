@@ -126,7 +126,7 @@ checksum = "ab25c689752fbb49903458495d3e71853229e262a2e6136325359e0705606483"
 
 [[package]]
 name = "kak-dap"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "clap",
  "crossbeam-channel",
