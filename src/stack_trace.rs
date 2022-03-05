@@ -59,9 +59,6 @@ pub fn handle_stack_trace_response(msg: json::JsonValue, ctx: &mut Context) {
         else {
             source_name = source_name_var.to_string();
         }
-        //let slash_index = val["source"]["path"].to_string().rfind("/").unwrap();
-        //let path = &val["source"]["path"].to_string();
-        //let file = path.get((slash_index + 1)..).unwrap();
         let line = &val["line"];
         cmd.push_str(&format!("{}: {}@{}:{}", id, frame_name, source_name, line));
         cmd.push_str("\n");

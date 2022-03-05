@@ -32,16 +32,10 @@ plug "https://codeberg.org/jdugan6240/kak-dap" do %{
 If using `kak-bundle` as your plugin manager, add the following to your kakrc:
 
 ```
-# The below two options may already be set if you use a plugin like kak-lsp
-# In this case, just update bundle_install_hooks to include compiling kak-dap
-set-option global bundle_do_install_hooks true
-set-option global bundle_install_hooks %{
-  cd ${kak_opt_bundle_path}/kak-dap/
+bundle "https://codeberg.org/jdugan6240/kak-dap" %{
+  cd ~/.config/kak/bundle/plugins/kak-dap
   cargo install --locked --force --path .
 }
-bundle "https://codeberg.org/jdugan6240/kak-dap"
-
-bundle-load # Don't include this if you already have this in your kakrc
 ```
 
 ### Manual
