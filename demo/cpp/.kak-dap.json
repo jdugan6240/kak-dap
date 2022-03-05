@@ -1,15 +1,24 @@
 {
   // The binary run to start the debug adapter
-  "adapter": "node",
+  "adapter": "${HOME}/cpptools/extension/debugAdapters/bin/OpenDebugAD7",
   
   // The arguments to the debug adapter, if any
-  "adapter_args": ["${HOME}/native-debug/extension/out/src/lldb.js"],
+  "adapter_args": [],
+
+  // The adapter ID. Needed by some debug adapters.
+  "adapterID": "cppdbg",
   
   // The arguments sent to the "launch" request
   // This will depend on the debug adapter being used
   "launch_args": {
-    "target": "${CUR_DIR}/test_c",
+    "program": "${CUR_DIR}/test_c",
+    "args": [],
     "cwd": "${CUR_DIR}",
-    "terminal": "alacritty"
+    "externalConsole": false,
+    "environment": [],
+    "MIMode": "gdb",
+    "logging": {
+        "programOutput": false
+    }
   }
 }

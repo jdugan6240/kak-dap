@@ -40,7 +40,7 @@ impl Context {
             cur_req_id: 0,
             session: session,
             last_adapter_seq: 0,
-            cur_thread: 0,
+            cur_thread: 1,
             scopes: vec![],
             variables: vec![],
             var_reqs: 0,

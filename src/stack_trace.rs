@@ -5,10 +5,13 @@ use crate::kakoune;
 use json::object;
 
 // Handles the "stopped" event.
-pub fn handle_stopped_event(_msg: json::JsonValue, ctx: &mut Context) {
+pub fn handle_stopped_event(msg: json::JsonValue, ctx: &mut Context) {
+    if msg["body"]["threadId"].is_number() {
+        ctx.cur_thread = msg["body"]["threadId"].to_string().parse::<u64>().unwrap()
+    }
     // Send a stack trace request
     let stack_trace_args = object! {
-        "threadId": 1
+        "threadId": ctx.cur_thread
     };
     debug_adapter_comms::do_request("stackTrace", &stack_trace_args, ctx);
 }

@@ -114,13 +114,13 @@ pub fn parse_cmd(cmd: json::JsonValue, ctx: &mut Context) {
     } else if cmd["cmd"] == "continue" {
         // Send a continue command to the debugger
         let continue_args = object! {
-            "threadId": 1
+            "threadId": ctx.cur_thread
         };
         debug_adapter_comms::do_request("continue", &continue_args, ctx);
     } else if cmd["cmd"] == "next" {
         // Send a next command to the debugger
         let next_args = object! {
-            "threadId": 1
+            "threadId": ctx.cur_thread
         };
         debug_adapter_comms::do_request("next", &next_args, ctx);
     } else if cmd["cmd"] == "pid" {
@@ -129,13 +129,13 @@ pub fn parse_cmd(cmd: json::JsonValue, ctx: &mut Context) {
     } else if cmd["cmd"] == "stepIn" {
         // Send a stepIn command to the debugger
         let step_in_args = object! {
-            "threadId": 1
+            "threadId": ctx.cur_thread
         };
         debug_adapter_comms::do_request("stepIn", &step_in_args, ctx);
     } else if cmd["cmd"] == "stepOut" {
         // Send a stepIn command to the debugger
         let step_out_args = object! {
-            "threadId": 1
+            "threadId": ctx.cur_thread
         };
         debug_adapter_comms::do_request("stepOut", &step_out_args, ctx);
     } else if cmd["cmd"] == "evaluate" {

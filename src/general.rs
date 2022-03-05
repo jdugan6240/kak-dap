@@ -9,7 +9,7 @@ use std::process;
 pub fn initialize(ctx: &mut Context) {
     // Construct the initialize request
     let initialize_args = object! {
-        "adapterID": "debugAdapter",
+        "adapterID": ctx.debug_cfg["adapterID"].to_string(),
         "linesStartAt1": true,
         "columnsStartAt1": true,
         "pathFormat": "path",

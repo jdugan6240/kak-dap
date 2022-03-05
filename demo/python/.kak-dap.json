@@ -4,6 +4,9 @@
   
   // The arguments to the debug adapter, if any
   "adapter_args": ["${HOME}/debugpy/src/debugpy/adapter"],
+
+  // The adapter ID. Needed by some debug adapters.
+  "adapterID": "pydbg",
   
   // The arguments sent to the "launch" request
   // This will depend on the debug adapter being used

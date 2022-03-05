@@ -33,7 +33,7 @@ If using `kak-bundle` as your plugin manager, add the following to your kakrc:
 
 ```
 bundle "https://codeberg.org/jdugan6240/kak-dap" %{
-  cd ~/.config/kak/bundle/plugins/kak-dap
+  cd ${kak_opt_bundle_path}/kak-dap
   cargo install --locked --force --path .
 }
 ```
