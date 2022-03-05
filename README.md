@@ -128,10 +128,12 @@ under "launch_args" in our `.kak-dap.json` file. In other words, the equivalent
 You may notice that the "${file}" expansion couldn't be translated over. This is
 because `kak-dap` only supports the following expansions:
 
+```
 ${CUR_DIR} - The directory containing the `.kak-dap.json` file.
 ${USER} - The current username.
 ${HOME} - The current user's home directory.
 $$ - A literal dollar.
+```
 
 If this is still confusing, examples of `.kak-dap.json` file configurations for
 various debug adapters can be found in the [Debug Adapter Installation](https://codeberg.org/jdugan6240/kak-dap/wiki/Debug-Adapter-Installation) wiki page.
@@ -163,7 +165,7 @@ dap-evaluate <expression> - Evaluate an arbitrary expression and show the result
 
 In addition, the stacktrace and variables buffers will be populated with the current
 stack trace and a variable heirarchy, respectively. In the variables buffer, some
-variables are expandable, and can be expanded by pressing <Enter>.
+variables are expandable, and can be expanded by pressing Enter.
 
 When you're finished debugging, run the following command to stop debugging:
 
