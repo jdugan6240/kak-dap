@@ -264,7 +264,7 @@ define-command -hidden dap-run-in-terminal -params 1.. %{
     terminal %arg{@}
     nop %sh{
         printf '{
-        "cmd": "pid",
+        "cmd": "pid"
         }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
     }
 }
