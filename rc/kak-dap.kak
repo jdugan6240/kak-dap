@@ -90,7 +90,7 @@ define-command dap-stop %{
     nop %sh{
         printf '{
         "cmd": "stop"
-        }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+        }' | eval "${kak_opt_dap_cmd} --request"
     }
 }
 
@@ -133,32 +133,32 @@ define-command dap-toggle-breakpoint %{ eval %sh{
 define-command dap-continue %{ nop %sh{
     printf '{
     "cmd": "continue" 
-    }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+    }' | eval "${kak_opt_dap_cmd} --request"
 }}
 
 define-command dap-next %{ nop %sh{
     printf '{
     "cmd": "next" 
-    }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+    }' | eval "${kak_opt_dap_cmd} --request"
 }}
 
 define-command dap-step-in %{ nop %sh{
     printf '{
     "cmd": "stepIn" 
-    }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+    }' | eval "${kak_opt_dap_cmd} --request"
 }}
 
 define-command dap-step-out %{ nop %sh{
     printf '{
     "cmd": "stepOut" 
-    }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+    }' | eval "${kak_opt_dap_cmd} --request"
 }}
 
 define-command dap-evaluate -params 1 %{ nop %sh{
     printf '{
     "cmd": "evaluate",
     "args": "%s"
-    }' "$1" | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+    }' "$1" | eval "${kak_opt_dap_cmd} --request"
 }}
 
 define-command dap-set-location -params 2 %{
@@ -251,7 +251,7 @@ define-command -hidden dap-expand-variable %{
             printf '{
             "cmd": "expand",
             "args": "%s"
-            }' $value | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+            }' $value | eval "${kak_opt_dap_cmd} --request"
         }
     }
 }
@@ -265,7 +265,7 @@ define-command -hidden dap-run-in-terminal -params 1.. %{
     nop %sh{
         printf '{
         "cmd": "pid"
-        }' | socat - UNIX-CLIENT:/tmp/kak-dap/${kak_session}
+        }' | eval "${kak_opt_dap_cmd} --request"
     }
 }
 

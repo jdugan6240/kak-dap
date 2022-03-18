@@ -64,6 +64,8 @@ are in the [Debug Adapter Installation](https://codeberg.org/jdugan6240/kak-dap/
 
 ## Usage
 
+An (old) demo of `kak-dap` can be found here: [![asciicast](https://asciinema.org/a/fjU1GBrXSxplfP6lEo7cqYcj9.svg)](https://asciinema.org/a/fjU1GBrXSxplfP6lEo7cqYcj9)
+
 ### .kak-dap.json File
 
 `kak-dap` requires a file to be present in your project's root directory, named
@@ -187,6 +189,18 @@ map global normal <F10> ':dap-next<ret>'
 map global normal <F11> ':dap-step-in<ret>'
 map global normal <F12> ':dap-step-out<ret>'
 ```
+
+## Troubleshooting
+
+`kak-dap` isn't perfect, and may fail from time to time. In case this happens, `kak-dap`'s
+logging can be enabled by inserting the following command in your kakrc:
+
+```
+set global dap_cmd "kak-dap -s %val{session} --log /tmp/kak-dap.log"
+```
+
+This will cause `kak-dap` to create a debug log in the `/tmp/kak-dap.log` file. If this isn't
+enough to diagnose the problem, please don't hesitate to raise an issue.
 
 ## Not-so-FAQ
 
