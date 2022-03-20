@@ -3,7 +3,7 @@
   "adapter": "python",
   
   // The arguments to the debug adapter, if any
-  "adapter_args": ["${HOME}/debugpy/src/debugpy/adapter"],
+  "adapter_args": ["-m", "debugpy.adapter"],
 
   // The adapter ID. Needed by some debug adapters.
   "adapterID": "pydbg",
