@@ -19,10 +19,12 @@ use simplelog::*;
 use std::fs;
 use std::fs::File;
 use std::panic;
+use std::env;
 
 use std::io::{stdin, Read, Write};
 use std::os::unix::net::UnixStream;
 
+use itertools::Itertools;
 use json::object;
 
 fn main() {
@@ -48,6 +50,11 @@ fn main() {
             Arg::with_name("request")
                 .long("request")
                 .help("Forward stdin to kak-dap server")
+        )
+        .arg(
+            Arg::with_name("kakoune")
+                .long("kakoune")
+                .help("Generate commands for Kakoune to plug in kak-dap")
         )
         .get_matches();
 
@@ -76,7 +83,23 @@ fn main() {
         )
         .unwrap();
     }
-    if matches.is_present("request") {
+    if matches.is_present("kakoune") {
+        // Grab ../rc/kak-dap.kak and print it out
+        let script: &str = include_str!("../rc/kak-dap.kak");
+        let args = env::args()
+            .skip(1)
+            .filter(|arg| arg != "--kakoune")
+            .join(" ");
+        let cmd = env::current_exe().unwrap();
+        let cmd = cmd.to_str().unwrap();
+        let lsp_cmd = format!(
+            "set global lsp_cmd '{} {}'",
+            kakoune::editor_escape(cmd),
+            kakoune::editor_escape(&args)
+        );
+        println!("{}\n{}", script, lsp_cmd);
+    }
+    else if matches.is_present("request") {
         // Forward the stdin to the kak-dap server
         let mut input = Vec::new();
         stdin()

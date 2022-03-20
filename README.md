@@ -15,6 +15,14 @@ This allows Kakoune to support debugging in a variety of different languages, pr
 
 ## Install
 
+### Pre-built Binary
+
+If using a binary distribution of `kak-dap`, place the following in your kakrc:
+
+```
+eval %sh{kak-dap --kakoune -s $kak_session}
+```
+
 ### Plug.kak
 
 If using `plug.kak` as your plugin manager, add the following to your kakrc:
