@@ -1,4 +1,4 @@
-## Unreleased
+## 1.1.0 - 2022-03-22
 
 Additions:
 - Added --request flag to `kak-dap` binary to send request to currently running `kak-dap` session
