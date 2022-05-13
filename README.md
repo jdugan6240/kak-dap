@@ -204,7 +204,7 @@ map global normal <F12> ':dap-step-out<ret>'
 logging can be enabled by inserting the following command in your kakrc:
 
 ```
-set global dap_cmd "kak-dap -s %val{session} --log /tmp/kak-dap.log"
+set global dap_cmd "kak-dap -s %val{session} --log /tmp/kak-dap.log -vvvv"
 ```
 
 This will cause `kak-dap` to create a debug log in the `/tmp/kak-dap.log` file. If this isn't

@@ -1,7 +1,7 @@
 extern crate clap;
+extern crate slog;
 #[macro_use]
-extern crate log;
-extern crate simplelog;
+extern crate slog_scope;
 
 mod breakpoints;
 mod config;
@@ -15,9 +15,11 @@ mod types;
 mod variables;
 
 use clap::{crate_version, App, Arg};
-use simplelog::*;
+use sloggers::file::FileLoggerBuilder;
+use sloggers::terminal::{Destination, TerminalLoggerBuilder};
+use sloggers::types::Severity;
+use sloggers::Build;
 use std::fs;
-use std::fs::File;
 use std::panic;
 use std::env;
 
@@ -26,6 +28,42 @@ use std::os::unix::net::UnixStream;
 
 use itertools::Itertools;
 use json::object;
+
+fn setup_logger(matches: &clap::ArgMatches<'_>) -> slog_scope::GlobalLoggerGuard {
+    let mut verbosity = matches.occurrences_of("v") as u8;
+
+    if verbosity == 0 {
+        verbosity = 2
+    }
+
+    let level = match verbosity {
+        0 => Severity::Error,
+        1 => Severity::Warning,
+        2 => Severity::Info,
+        3 => Severity::Debug,
+        _ => Severity::Trace,
+    };
+
+    let logger = if let Some(log_path) = matches.value_of("log") {
+        // First remove the existing logfile. We don't want multiple logging sessions in a single file.
+        let _result = fs::remove_file(log_path);
+
+        let mut builder = FileLoggerBuilder::new(log_path);
+        builder.level(level);
+        builder.build().unwrap()
+    } else {
+        let mut builder = TerminalLoggerBuilder::new();
+        builder.level(level);
+        builder.destination(Destination::Stderr);
+        builder.build().unwrap()
+    };
+
+    panic::set_hook(Box::new(|panic_info| {
+        error!("panic: {}", panic_info);
+    }));
+
+    slog_scope::set_global_logger(logger)
+}
 
 fn main() {
     // Get command line arguments
@@ -56,6 +94,12 @@ fn main() {
                 .long("kakoune")
                 .help("Generate commands for Kakoune to plug in kak-dap")
         )
+        .arg(
+            Arg::with_name("v")
+                .short("v")
+                .multiple(true)
+                .help("Sets the level of verbosity (use up to 4 times)"),
+        )
         .get_matches();
 
     // Enable logging of panics
@@ -67,22 +111,8 @@ fn main() {
     let session: String = matches.value_of("session").map(str::to_string).unwrap();
 
     // Initialize the logger
-    if let Some(log_path) = matches.value_of("log") {
-        WriteLogger::init(
-            LevelFilter::Trace,
-            Config::default(),
-            File::create(log_path).unwrap(),
-        )
-        .unwrap();
-    } else {
-        TermLogger::init(
-            LevelFilter::Info,
-            Config::default(),
-            TerminalMode::Stdout,
-            ColorChoice::Auto,
-        )
-        .unwrap();
-    }
+    let _guard = setup_logger(&matches);
+
     if matches.is_present("kakoune") {
         // Grab ../rc/kak-dap.kak and print it out
         let script: &str = include_str!("../rc/kak-dap.kak");
@@ -98,8 +128,7 @@ fn main() {
             kakoune::editor_escape(&args)
         );
         println!("{}\n{}", script, lsp_cmd);
-    }
-    else if matches.is_present("request") {
+    } else if matches.is_present("request") {
         // Forward the stdin to the kak-dap server
         let mut input = Vec::new();
         stdin()

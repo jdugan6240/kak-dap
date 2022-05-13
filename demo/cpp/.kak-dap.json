@@ -1,6 +1,6 @@
 {
   // The binary run to start the debug adapter
-  "adapter": "${HOME}/cpptools/extension/debugAdapters/bin/OpenDebugAD7",
+  "adapter": "${HOME}/dap/cpptools/extension/debugAdapters/bin/OpenDebugAD7",
   
   // The arguments to the debug adapter, if any
   "adapter_args": [],

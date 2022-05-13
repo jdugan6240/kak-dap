@@ -1,3 +1,11 @@
+## Unreleased
+
+Additions:
+- Added repeatable -v flag to `kak-dap` binary to customize verbosity of logging
+
+Bug Fixes:
+- Logging to file would occasionally produce binary (aka unreadable) output
+
 ## 1.1.0 - 2022-03-22
 
 Additions:
