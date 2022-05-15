@@ -130,10 +130,14 @@ define-command dap-toggle-breakpoint %{ eval %sh{
 # Commands sent directly to debug adapter
 #
 
-define-command dap-continue %{ nop %sh{
-    printf '{
-    "cmd": "continue" 
-    }' | eval "${kak_opt_dap_cmd} --request"
+define-command dap-continue %{ eval %sh{
+    if [ "$kak_opt_dap_running" = false ]; then
+        printf "%s\n" "dap-start"
+    else
+        printf '{
+        "cmd": "continue" 
+        }' | eval "${kak_opt_dap_cmd} --request" > /dev/null 2>&1
+    fi
 }}
 
 define-command dap-next %{ nop %sh{

@@ -166,7 +166,7 @@ At every stopping point (usually breakpoints), the "code window" will show the c
 line. At this point, the following commands are available:
 
 ```
-dap-continue - Continue running from the current point
+dap-continue - Continue running from the current point, or start debug session if one isn't already running
 dap-next - Execute and stop at the next line
 dap-step-in - Step into a function/method
 dap-step-out - Step out (return from) a function/method
