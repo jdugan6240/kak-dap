@@ -30,15 +30,17 @@ pub struct Context {
     // The breakpoints passed to the kak-dap session
     pub breakpoint_data: HashMap<String, Vec<u64>>,
     // The debug configuration
-    pub debug_cfg: JsonValue
+    pub debug_cfg: JsonValue,
+    // The capabilities reported by the debug adapter
+    pub capabilities: JsonValue
 }
 
 impl Context {
     pub fn new(debg_apt_tx: Sender<json::JsonValue>, session: String) -> Self {
         Context {
-            debg_apt_tx: debg_apt_tx,
+            debg_apt_tx,
             cur_req_id: 0,
-            session: session,
+            session,
             last_adapter_seq: 0,
             cur_thread: 1,
             scopes: vec![],
@@ -48,6 +50,7 @@ impl Context {
             cur_requests: vec![],
             breakpoint_data: HashMap::new(),
             debug_cfg: object!{},
+            capabilities: object!{},
         }
     }
 

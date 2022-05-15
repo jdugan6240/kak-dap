@@ -60,5 +60,9 @@ pub fn handle_initialized_event(_msg: json::JsonValue, ctx: &mut Context) {
     }
   
     // Now, send the configurationDone request.
-    debug_adapter_comms::do_request("configurationDone", &object! {}, ctx);
+    // We only do this if the adapter has advertised the "supportsConfigurationDone" capability.
+    if ctx.capabilities.is_object() && ctx.capabilities["supportsConfigurationDoneRequest"].is_boolean()
+        && ctx.capabilities["supportsConfigurationDoneRequest"].as_bool().unwrap() == true {
+        debug_adapter_comms::do_request("configurationDone", &object! {}, ctx);
+    }
 }

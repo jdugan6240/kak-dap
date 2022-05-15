@@ -21,6 +21,10 @@ pub fn initialize(ctx: &mut Context) {
 
 // Handles the "initialize" response.
 pub fn handle_initialize_response(_msg: json::JsonValue, ctx: &mut Context) {
+    let capabilities = &_msg["body"];
+    if capabilities.is_object() {
+        ctx.capabilities = capabilities.clone();
+    }
     // We need to send the launch request before the breakpoints.
     // For background: https://github.com/microsoft/vscode/issues/4902
     let launch_args : &json::JsonValue = &ctx.debug_cfg["launch_args"];
@@ -38,9 +42,8 @@ pub fn handle_run_in_terminal_request(msg: json::JsonValue, ctx: &mut Context) {
     let mut cmd = "dap-run-in-terminal ".to_string();
     let args_members = args.members();
     for val in args_members {
-        cmd.push_str("\"");
         cmd.push_str(&val.to_string());
-        cmd.push_str("\" ");
+        cmd.push_str(" ");
     }
     kakoune::kak_command(&cmd, &ctx.session);
 }
