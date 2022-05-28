@@ -87,6 +87,7 @@ pub fn handle_adapter_event(msg: json::JsonValue, ctx: &mut Context) {
     match msg["event"].to_string().as_str() {
         "exited" => general::goodbye(&ctx.session),
         "initialized" => breakpoints::handle_initialized_event(msg, ctx),
+        "output" => general::output(msg, ctx),
         "stopped" => stack_trace::handle_stopped_event(msg, ctx),
         "terminated" => general::goodbye(&ctx.session),
         _ => (),

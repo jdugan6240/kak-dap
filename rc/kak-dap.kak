@@ -277,6 +277,12 @@ define-command -hidden dap-run-in-terminal -params 1.. %{
 # Responses to debug adapter responses
 #
 
+define-command -hidden dap-output -params 2 %{
+    evaluate-commands -client %opt{jumpclient} %{
+        echo -debug DAP ADAPTER %arg{1}: %arg{2}
+    }
+}
+
 define-command -hidden dap-stack-trace -params 3 %{
     dap-set-location %arg{1} %arg{2}
     try %{ eval -client %opt{jumpclient} dap-jump-to-location }

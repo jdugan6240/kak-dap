@@ -63,6 +63,23 @@ pub fn handle_evaluate_response(msg: json::JsonValue, ctx: &mut Context) {
     kakoune::kak_command(&cmd, &ctx.session);
 }
 
+//Handles the "output" event.
+pub fn output(msg: json::JsonValue, ctx: &mut Context) {
+    // Get the category. If it's not telemetry (who wants telemetry?), pass it to the dap-output command.
+    let category = &msg["body"]["category"];
+    if category.is_string() && category.as_str().unwrap() == "telemetry" {
+        return;
+    }
+    let category_str = &msg["body"]["category"].as_str().unwrap_or("output");
+    let output = msg["body"]["output"].as_str().unwrap();
+    let mut cmd = "dap-output ".to_string();
+    cmd += &category_str;
+    cmd += " '";
+    cmd += &kakoune::editor_escape(output);
+    cmd += "'";
+    kakoune::kak_command(&cmd, &ctx.session);
+}
+    
 //Tries to end kak-dap gracefully.
 pub fn goodbye(session: &str) {
     kakoune::kak_command("try %{ eval -client %opt{jumpclient} %{ dap-reset-location }}", session);

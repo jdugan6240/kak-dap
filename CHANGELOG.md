@@ -3,6 +3,7 @@
 Additions:
 - Added repeatable -v flag to `kak-dap` binary to customize verbosity of logging
 - `dap-continue` now starts debugging session if one isn't running
+- Added dap-output command to show output events to the user
 
 Bug Fixes:
 - Logging to file would occasionally produce binary (aka unreadable) output
