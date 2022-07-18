@@ -292,3 +292,14 @@ define-command -hidden dap-stack-trace -params 3 %{
 define-command -hidden dap-evaluate-response -params 2.. %{
     try %{ eval -client %opt{jumpclient} %{ info -title "Result" " %arg{1}:%arg{2} "}}
 }
+
+declare-user-mode dap
+map global dap s -docstring 'start' ': dap-start<ret>'
+map global dap b -docstring 'toggle breakpoints' ': dap-toggle-breakpoint<ret>'
+map global dap c -docstring 'continue' ': dap-continue<ret>'
+map global dap n -docstring 'next' ': dap-next<ret>'
+map global dap o -docstring 'step out' ': dap-step-out<ret>'
+map global dap i -docstring 'step in' ': dap-step-in<ret>'
+map global dap e -docstring 'eval' ': dap-evaluate '
+map global dap q -docstring 'stop' ': dap-stop<ret>'
+map global dap . -docstring 'lock' ': enter-user-mode -lock dap<ret>'
