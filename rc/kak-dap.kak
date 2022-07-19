@@ -241,6 +241,8 @@ define-command -hidden dap-show-variables -params 1 %{
         edit! -scratch *variables*
         set-register '"' %arg{1}
         execute-keys Pgg
+        add-highlighter buffer/ regex "^(Scope):\s([\w\s]+)" 1:cyan 2:cyan+i
+        add-highlighter buffer/ regex "^\s+([+|-]\s)?(<\d+>)\s([^\s]+)\s\(([A-Za-z]+)\)" 2:comment 3:variable 4:type
         map buffer normal '<ret>' ':<space>dap-expand-variable<ret>'
     }
 }
