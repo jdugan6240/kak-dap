@@ -29,7 +29,7 @@ pub fn handle_stack_trace_response(msg: json::JsonValue, ctx: &mut Context) {
     cmd.push_str(" ");
     cmd.push_str(&file.to_string());
     cmd.push_str(" ");
-    cmd.push_str("'Stack Trace:\n\n");
+    cmd.push_str("'");
     // Add contents to push to stacktrace buffer
     let frame_members = frames.members();
     for val in frame_members {
