@@ -24,6 +24,9 @@ decl -hidden str dap_location_info
 
 decl -hidden line-specs dap_breakpoints_flags
 decl -hidden line-specs dap_location_flags
+decl -hidden int dap_variables_cursor_line
+# Initial setting to ensure cursor is set to top
+set-option global dap_variables_cursor_line 1
 
 addhl shared/dap group -passes move
 addhl shared/dap/ flag-lines DapLocation dap_location_flags
@@ -240,8 +243,10 @@ define-command -hidden dap-show-variables -params 1 %{
     evaluate-commands -save-regs '"' -try-client %opt[variablesclient] %{
         edit! -scratch *variables*
         set-register '"' %arg{1}
-        execute-keys Pgg
+        execute-keys "P%opt{dap_variables_cursor_line}g"
         map buffer normal '<ret>' ':<space>dap-expand-variable<ret>'
+        # Reset to ensure default value, will be set by expand-variable
+        set-option global dap_variables_cursor_line 1
     }
 }
 
@@ -250,6 +255,7 @@ define-command -hidden dap-expand-variable %{
         # Get variable we're expanding
         execute-keys -save-regs '' "ghwwwW"
         set-register t %val{selection}
+        set-option global dap_variables_cursor_line %val{cursor_line}
         nop %sh{
             value="${kak_reg_t}"
             printf '{
