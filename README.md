@@ -18,7 +18,7 @@ This allows Kakoune to support debugging in a variety of different languages, pr
 ### Requirements
 
 - Rust/Cargo
-- Ensure cargo packages are in your path. (eg: PATH=$HOME/.cargo/bin:$PATH)
+- Ensure cargo packages are in your path. (eg: `PATH=$HOME/.cargo/bin:$PATH`)
 
 ### Pre-built Binary
 
