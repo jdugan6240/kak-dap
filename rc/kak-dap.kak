@@ -254,7 +254,7 @@ define-command -hidden dap-show-variables -params 1 %{
         add-highlighter buffer/type_num regex "(-?\d+)$" 1:value
         add-highlighter buffer/type_bool regex "((?i)true|false)$" 0:value
         add-highlighter buffer/type_null regex "((?i)null|nil|undefined)$" 0:keyword
-        add-highlighter buffer/type_array regex "(array\(\d+\))$" 0:function
+        add-highlighter buffer/type_array regex "(array\(\d+\))$" 0:default+i
     }
 }
 
