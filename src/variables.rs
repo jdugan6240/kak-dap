@@ -72,7 +72,7 @@ pub fn handle_variables_response(msg: json::JsonValue, ctx: &mut Context) {
 
 // Constructs the command that renders all the scopes and variables in the variables buffer.
 pub fn serialize_variables(ctx: &mut Context) {
-    let mut cmd = "dap-show-variables 'Variables:\n\n".to_string();
+    let mut cmd = "dap-show-variables '".to_string();
     let mut cmd_val = "".to_string();
     for scope in &ctx.scopes {
         let scope_name = &scope.contents["name"];
@@ -88,7 +88,7 @@ pub fn serialize_variables(ctx: &mut Context) {
             }
         }
         if has_child {
-            let val = serialize_variable(ctx, scope.variable_reference, 4);
+            let val = serialize_variable(ctx, scope.variable_reference, 2);
             cmd_val.push_str(&val);
         }
     }
@@ -100,6 +100,7 @@ pub fn serialize_variables(ctx: &mut Context) {
 // Constructs the command that renders all the child variables of the given variable reference in the variables buffer.
 pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
     let mut val = "".to_string();
+    let mut icon = " ";
     for var in &ctx.variables {
         if var.par_variable_reference == par_ref {
             for _i in 0..indent {
@@ -107,7 +108,7 @@ pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
             }
             // If this variable is expandable
             if var.variable_reference > 0 {
-                let mut icon = "+";
+                icon = "+";
                 // Determine if this variable has any child variables currently
                 for varr in &ctx.variables {
                     if varr.par_variable_reference == var.variable_reference {
@@ -115,8 +116,8 @@ pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
                         break;
                     }
                 }
-                val.push_str(&format!("{} ", icon));
             }
+            val.push_str(&format!("{} ", icon));
             val.push_str("<");
             val.push_str(&var.variable_reference.to_string());
             val.push_str("> ");
@@ -127,7 +128,7 @@ pub fn serialize_variable(ctx: &Context, par_ref: u64, indent: u64) -> String {
             val.push_str(&var.contents["value"].to_string());
             val.push_str("\n");
             if var.variable_reference > 0 {
-                val.push_str(&serialize_variable(ctx, var.variable_reference, indent + 4));
+                val.push_str(&serialize_variable(ctx, var.variable_reference, indent + 2));
             }
         }
     }

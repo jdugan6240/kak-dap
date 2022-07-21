@@ -232,7 +232,7 @@ define-command -hidden -params 1 dap-refresh-location-flag %{
 
 define-command -hidden dap-show-stacktrace -params 1 %{
     # Show the stack trace in the stack trace buffer
-	evaluate-commands -save-regs '"' -try-client %opt[stacktraceclient] %{
+    evaluate-commands -save-regs '"' -try-client %opt[stacktraceclient] %{
         edit! -scratch *stacktrace*
         set-register '"' %arg{1}
         execute-keys Pgg
@@ -247,6 +247,19 @@ define-command -hidden dap-show-variables -params 1 %{
         map buffer normal '<ret>' ':<space>dap-expand-variable<ret>'
         # Reset to ensure default value, will be set by expand-variable
         set-option global dap_variables_cursor_line 1
+
+        # strings, keep first
+        add-highlighter buffer/vals regions
+        add-highlighter buffer/vals/double_string region '"'  (?<!\\)(\\\\)*" fill string
+        add-highlighter buffer/vals/single_string region "'"  (?<!\\)(\\\\)*' fill string
+        # Scope and varialbe lines
+        add-highlighter buffer/scope regex "^(Scope):\s([\w\s]+)" 2:attribute
+        add-highlighter buffer/variable_line regex "^\s+([+|-]\s)?(<\d+>)\s([^\s]+)\s\(([A-Za-z]+)\)" 2:comment 3:variable 4:type
+        # values
+        add-highlighter buffer/type_num regex "(-?\d+)$" 1:value
+        add-highlighter buffer/type_bool regex "((?i)true|false)$" 0:value
+        add-highlighter buffer/type_null regex "((?i)null|nil|undefined)$" 0:keyword
+        add-highlighter buffer/type_array regex "(array\(\d+\))$" 0:default+i
     }
 }
 
