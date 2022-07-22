@@ -190,7 +190,7 @@ dap-stop
 
 ### Custom user mode
 
-A custom menu is provided with mappings to several commands. You may add this to your user mode using a key of your liking, below we're using `x`:
+A `kak-dap` user mode is provided with mappings to several commands. You may map this to a key of your liking, below we're using `x`:
 
 ```
 map global user x -docstring 'dap' ': enter-user-mode dap<ret>'
@@ -224,3 +224,8 @@ supported, which allows for more languages to be debugged.
 ## License
 
 kak-dap is licensed under the BSD 0-Clause License.
+
+## Contributors
+
+James Dugan (https://codeberg.org/jdugan6240)
+in0ni (https://github.com/in0ni)
