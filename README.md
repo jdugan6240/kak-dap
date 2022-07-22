@@ -15,6 +15,11 @@ This allows Kakoune to support debugging in a variety of different languages, pr
 
 ## Install
 
+### Requirements
+
+- Rust/Cargo
+- Ensure cargo packages are in your path. (eg: `PATH=$HOME/.cargo/bin:$PATH`)
+
 ### Pre-built Binary
 
 If using a binary distribution of `kak-dap`, place the following in your kakrc:
@@ -84,13 +89,13 @@ convenience. In general, it will look like the following:
 {
   // The binary run to start the debug adapter
   "adapter": "adapter",
-  
+
   // The arguments to the debug adapter
   "adapter_args": ["args"],
-  
+
   // The adapter ID. Needed by some debug adapters.
   "adapterID": "mydbg",
-  
+
   // The arguments sent to the "launch" request
   "launch_args": {
     // This will depend on the debug adapter used.
@@ -183,19 +188,12 @@ When you're finished debugging, run the following command to stop debugging:
 dap-stop
 ```
 
-### Keybindings
+### Custom user mode
 
-`kak-dap` doesn't have keybindings by default, in an effort to not clobber keybindings
-the user already uses. As such, the user must set keybindings themselves. The author
-recommends the following keybindings:
+A custom menu is provided with mappings to several commands. You may add this to your user mode using a key of your liking, below we're using `x`:
 
 ```
-map global normal <F3> ':dap-stop<ret>'
-map global normal <F5> ':dap-continue<ret>'
-map global normal <F9> ':dap-toggle-breakpoint<ret>'
-map global normal <F10> ':dap-next<ret>'
-map global normal <F11> ':dap-step-in<ret>'
-map global normal <F12> ':dap-step-out<ret>'
+map global user x -docstring 'dap' ': enter-user-mode dap<ret>'
 ```
 
 ## Troubleshooting
@@ -212,15 +210,15 @@ enough to diagnose the problem, please don't hesitate to raise an issue.
 
 ## Not-so-FAQ
 
-Q: Does it work? 
+Q: Does it work?
 
 A: Yes, but it's rather unpolished and limited at the moment.
 
 Q: What's the point of this? kakoune-gdb and kakoune-dbgp exist.
 
-A: kakoune-gdb is limited to languages supported by gdb - that is, C languages and rust. 
+A: kakoune-gdb is limited to languages supported by gdb - that is, C languages and rust.
 kakoune-dbgp also only supports languages currently supported by the dbgp protocol, which
-is mainly PHP at the moment as far as I know. The debug adapter protocol is much more widely 
+is mainly PHP at the moment as far as I know. The debug adapter protocol is much more widely
 supported, which allows for more languages to be debugged.
 
 ## License
