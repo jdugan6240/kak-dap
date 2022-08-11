@@ -228,4 +228,5 @@ kak-dap is licensed under the BSD 0-Clause License.
 ## Contributors
 
 James Dugan (https://codeberg.org/jdugan6240)
+
 in0ni (https://github.com/in0ni)

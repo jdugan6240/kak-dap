@@ -4,9 +4,12 @@ Additions:
 - Added repeatable -v flag to `kak-dap` binary to customize verbosity of logging
 - `dap-continue` now starts debugging session if one isn't running
 - Added dap-output command to show output events to the user
+- Basic syntax highlighting for variables buffer
+- Added `dap` user mode
 
 Bug Fixes:
 - Logging to file would occasionally produce binary (aka unreadable) output
+- Expanding/collapsing variables no longer causes cursor to jump to line 1
 
 ## 1.1.0 - 2022-03-22
 
