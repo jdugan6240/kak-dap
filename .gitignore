@@ -1,6 +1,8 @@
-# Added by cargo
-
-/target
 
 demo/cpp/test_c
 demo/cpp/.ccls-cache/
+
+### Python ###
+__pycache__/
+*.py[cod]
+*$py.class

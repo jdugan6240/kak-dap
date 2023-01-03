@@ -1,6 +1,8 @@
+# This option indicates the kak-dap source directory.
+decl -hidden str dap_dir %sh{echo $(dirname $kak_source)/../src}
 # This option dictates the command run to run the kak-dap binary.
-decl -hidden str dap_cmd "kak-dap -s %val{session}"
-# This option indicates whether the kak-dap binary for this session is running.
+decl -hidden str dap_cmd "python %opt{dap_dir}/main.py -s %val{session}"
+# This option indicates whether the kak-dap server for this session is running.
 decl -hidden bool dap_running false
 
 # This option indicates the client in which the "stacktrace" buffer will be shown
@@ -60,6 +62,7 @@ define-command dap-setup-ui %{
 }
 
 define-command dap-takedown-ui %{
+    echo -debug "Doing it..."
     # Kill the stacktrace client
     evaluate-commands -try-client %opt{stacktraceclient} %{
         quit!
@@ -72,15 +75,12 @@ define-command dap-takedown-ui %{
 
 define-command dap-start %{
     eval %sh{
+        # kak_opt_dap_breakpoints_info
+        # kak_buffile
         if [ "$kak_opt_dap_running" = false ]; then
             # Setup the UI
             printf "%s\n" "dap-setup-ui"
             # Start the kak-dap binary
-            mkdir /tmp/kak-dap
-            printf '{
-            "breakpoints": "%s"
-            }' "$kak_opt_dap_breakpoints_info" > /tmp/kak-dap/${kak_session}_breakpoints
-            export CUR_FILE=$kak_buffile
             (eval "${kak_opt_dap_cmd}") > /dev/null 2>&1 < /dev/null &
         else
             printf "echo %s\n" "kak-dap already running"

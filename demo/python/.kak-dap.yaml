@@ -1,0 +1,10 @@
+configurations:
+    launch:
+        adapter: 'debugpy'
+        launch_args:
+            program: '${CUR_DIR}/test.py'
+            args: []
+            stopOnEntry: true
+            console: 'externalTerminal'
+            debugOptions: []
+            cwd: '${CUR_DIR}'
