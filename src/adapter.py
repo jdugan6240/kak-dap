@@ -16,7 +16,7 @@ def reader_thread(rfile, q):
     body_length = 0
 
     # While the input stream is still alive
-    while rfile.closed:
+    while not rfile.closed:
         data += rfile.read(1)
         # If we are reading the header
         if state == 'HEADER':
@@ -25,7 +25,7 @@ def reader_thread(rfile, q):
                 # Grab the content length
                 state = 'BODY'
                 headers = data.split(b'\r\n\r\n')[0]
-                _, header = headers.split('Content-Length:')
+                _, header = headers.split(b'Content-Length:')
                 content_length = int(header.strip())
                 data = b''
         else:
@@ -53,7 +53,7 @@ class AdapterOutput:
         self._rfile = rfile
         self._msg_queue = Queue()
         self._process = Process(
-            target=reader_thread, args=(self._rfile, self.msg_queue)
+            target=reader_thread, args=(self._rfile, self._msg_queue)
         )
 
     def get_msg(self):
@@ -79,11 +79,13 @@ class AdapterInput:
             msg = 'Content-Length: {}\r\n\r\n' '{}'.format(
                 content_length, body
             )
+            logging.debug(f'Writing: {msg}')
             # Write to the process' stdout
             self._wfile.write(msg.encode('utf-8'))
             self._wfile.flush()
-        except Exception:
+        except Exception as e:
             logging.error(f'Failed to write {msg} message to adapter')
+            logging.error(f'Reason: {e}')
 
 
 class Adapter(object):
@@ -100,14 +102,31 @@ class Adapter(object):
             proc_args, stdin=PIPE, stdout=PIPE, stderr=PIPE
         )
 
-        self._adapter_output = AdapterOutput(self._adapter_process.stdin)
-        self._adapter_input = AdapterInput(self._adapter_process.stdout)
-        self._stderr_process = Process(
-            target=stderr_thread, args=(self._adapter_process.stderr)
-        )
+        self.next_req_id = 0
 
-    def write_msg(self, msg):
+        self._handlers = {}
+
+        self._adapter_output = AdapterOutput(self._adapter_process.stdout)
+        self._adapter_output._process.start()
+        self._adapter_input = AdapterInput(self._adapter_process.stdin)
+        # self._stderr_process = Process(
+        #    target=stderr_thread, args=(self._adapter_process.stderr)
+        # )
+
+    def write_request(self, cmd, args, callback):
+        msg = {
+            'type': 'request',
+            'seq': self.next_req_id,
+            'command': cmd,
+            'arguments': args,
+        }
+        logging.debug(f'To debug adapter: {msg}')
         self._adapter_input.write_msg(msg)
+        self._handlers[self.next_req_id] = callback
+        self.next_req_id += 1
 
     def get_msg(self):
         return self._adapter_output.get_msg()
+
+    def get_callback(self, req_id):
+        return self._handlers.pop(req_id)

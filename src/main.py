@@ -1,5 +1,6 @@
 import argparse
 import debug_session
+from kakoune import KakConnection
 import logging
 import os
 import sys
@@ -31,21 +32,76 @@ parser.add_argument(
     required=True,
     help='Kakoune session to communicate with',
 )
+parser.add_argument(
+    '-l', '--log', help='Write log to file', action='store_true'
+)
+parser.add_argument(
+    '-v', '--verbosity', help='increase logging verbosity', action='count'
+)
+parser.add_argument(
+    '-r',
+    '--request',
+    help='Send stdin as request to kak-dap server',
+    action='store_true',
+)
 
 args = parser.parse_args()
 
 session = args.session
 
-# Create directory where logfiles go, if it doesn't exist already
-logfile_path = xdg.xdg_data_home() / 'kak-dap'
-if not logfile_path.exists():
-    logfile_path.mkdir()
+# If the --request argument is present, grab stdin
+# and send it to the kak-dap FIFO
+if args.request:
+    fifo_path = KakConnection.get_input_fifo_path()
+    fifo_write = open(fifo_path, 'w')
+    input_str = sys.stdin.read()
+    fifo_write.write(input_str)
+    fifo_write.flush()
+    sys.exit(0)
 
-logfile = logfile_path.as_posix() + '/kak-dap.log'
+# Determine log level
+verbosity = 2
+if args.verbosity > 0:
+    verbosity = args.verbosity
+log_level = logging.CRITICAL
+if verbosity == 2:
+    log_level = logging.ERROR
+elif verbosity == 3:
+    log_level = logging.WARNING
+elif verbosity == 4:
+    log_level = logging.INFO
+elif verbosity == 5:
+    log_level = logging.DEBUG
 
-# Delete previous logfile, if it exists.
-# No need to have lots of sessions worth of logs.
-logging.basicConfig(filename=logfile, level=logging.DEBUG, filemode='w')
+# If the log flag is set, write log to a file
+if args.log:
+    # Create directory where logfiles go, if it doesn't exist already
+    logfile_path = xdg.xdg_data_home() / 'kak-dap'
+    if not logfile_path.exists():
+        logfile_path.mkdir()
+
+    logfile = logfile_path.as_posix() + '/kak-dap.log'
+
+    # If the file exists, delete it.
+    # We don't want many sessions worth of logs.
+    if os.path.exists(logfile):
+        os.remove(logfile)
+
+    logging.basicConfig(
+        format='%(levelname)s@%(filename)s:%(lineno)d - %(message)s',
+        filename=logfile,
+        level=log_level,
+        filemode='w',
+    )
+
+
+# Otherwise, log to the terminal
+else:
+    logging.basicConfig(
+        format='%(levelname)s@%(filename)s:%(lineno)d - %(message)s',
+        level=log_level,
+    )
+
 
 # Setup stderr to redirect to log
 stderr_log = logging.getLogger('stderr')

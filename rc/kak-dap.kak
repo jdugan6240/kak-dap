@@ -80,6 +80,8 @@ define-command dap-start %{
         if [ "$kak_opt_dap_running" = false ]; then
             # Setup the UI
             printf "%s\n" "dap-setup-ui"
+
+            printf "echo -debug %s\n" "%opt{dap_cmd}"
             # Start the kak-dap binary
             (eval "${kak_opt_dap_cmd}") > /dev/null 2>&1 < /dev/null &
         else

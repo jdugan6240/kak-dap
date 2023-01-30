@@ -1,3 +1,4 @@
+import errno
 import json
 import logging
 import os
@@ -19,16 +20,26 @@ class KakConnection:
     def __init__(self, session: str) -> None:
         self.session = session
         self.out_socket_path = self._get_out_socket_path(self.session)
-        self.in_socket_path = self._get_in_socket_path(self.session)
-        self.in_socket = socket.socket(socket.AF_UNIX)
-        self.in_socket.bind(self.in_socket_path)
+        self.in_fifo_path = self._get_in_fifo_path(self.session)
+        try:
+            os.mkfifo(self.in_fifo_path)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise e
+        self.is_open = True
 
     def get_msg(self) -> object:
         """
         Retrieves a message on the input socket.
         """
-        result = self.in_socket.recv()
-        result_str = result.decode('utf-8')
+        # Retrieve the message from the FIFO
+        result_str = ''
+        with open(self.in_fifo_path, 'r') as fifo:
+            while True:
+                data = fifo.read()
+                if len(data) == 0:
+                    break
+                result_str += data
         # Ensure message is kosher
         result_msg = json.loads(result_str)
         try:
@@ -41,10 +52,10 @@ class KakConnection:
 
     def cleanup(self) -> None:
         """
-        Close the input socket and cleanup the /tmp/kak-dap dir.
+        Close the input fifo and cleanup the /tmp/kak-dap dir.
         """
-        self.in_socket.close()
-        os.remove(self.in_socket_path)
+        os.remove(self.in_fifo_path)
+        self.is_open = False
 
     def send_cmd(self, cmd: str) -> bool:
         """
@@ -102,17 +113,17 @@ class KakConnection:
         return session_path.as_posix()
 
     @staticmethod
-    def _get_in_socket_path(session: str) -> str:
+    def _get_in_fifo_path(session: str) -> str:
         """
-        Retrieves the path for the socket through which the Kakoune session
+        Retrieves the path for the fifo through which the Kakoune session
         gives us commands.
         """
         # According to the XDG Base Directory specification, XDG_RUNTIME_DIR
         # can be undefined. Therefore, as a backup, we use the ~/.kak-dap/
         # directory.
-        socket_path = Path.home() / '/.kak-dap'
+        fifo_path = Path.home() / '/.kak-dap'
         if xdg.xdg_runtime_dir() is not None:
-            socket_path = xdg.xdg_runtime_dir() / 'kak-dap'
-        if not socket_path.exists():
-            socket_path.mkdir()
-        return socket_path.as_posix() + f'/{session}.sock'
+            fifo_path = xdg.xdg_runtime_dir() / 'kak-dap'
+        if not fifo_path.exists():
+            fifo_path.mkdir()
+        return fifo_path.as_posix() + f'/{session}.fifo'
