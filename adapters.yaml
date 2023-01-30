@@ -1,0 +1,12 @@
+adapters:
+    debugpy:
+        executable: "python"
+        args:
+            - "-m"
+            - "debugpy.adapter"
+    readapt:
+        executable: "bundle"
+        args:
+            - "exec"
+            - "readapt"
+            - "stdio"
