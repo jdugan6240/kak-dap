@@ -120,8 +120,7 @@ def handle_kak_command(cmd):
         # TODO
         pass
     elif cmd['cmd'] == 'pid':
-        # TODO
-        pass
+        debug_adapter.write_response(general.last_adapter_seq)
     elif cmd['cmd'] == 'stepIn':
         # TODO
         pass

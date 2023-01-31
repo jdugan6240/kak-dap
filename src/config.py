@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from schema import Schema, SchemaError
+from schema import Optional, Schema, SchemaError
 import xdg
 import yaml
 
@@ -19,7 +19,8 @@ def get_adapter_config():
     config_home = xdg.xdg_config_home().as_posix()
     config_path = Path(config_home + '/kak-dap/adapters.yaml')
     if not config_path.exists():
-        config_path = Path('../adapters.yaml')
+        current_dir = Path(__file__).parent.resolve()
+        config_path = current_dir / Path('../adapters.yaml')
 
     logging.debug(f'Found adapter config at {config_path}')
     config_data = config_path.read_text()

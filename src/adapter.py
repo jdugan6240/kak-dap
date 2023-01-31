@@ -125,6 +125,20 @@ class Adapter(object):
         self._handlers[self.next_req_id] = callback
         self.next_req_id += 1
 
+    def write_response(self, seq):
+        # Only one reverse request we support right now
+        # So assume runInTerminal
+        msg = {
+            'type': 'response',
+            'seq': self.next_req_id,
+            'request_seq': seq,
+            'success': True,
+            'command': 'runInTerminal',
+        }
+        logging.debug(f'To debug adapter: {msg}')
+        self._adapter_input.write_msg(msg)
+        self.next_req_id += 1
+
     def get_msg(self):
         return self._adapter_output.get_msg()
 

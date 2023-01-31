@@ -52,7 +52,7 @@ session = args.session
 # If the --request argument is present, grab stdin
 # and send it to the kak-dap FIFO
 if args.request:
-    fifo_path = KakConnection.get_input_fifo_path()
+    fifo_path = KakConnection._get_in_fifo_path(session)
     fifo_write = open(fifo_path, 'w')
     input_str = sys.stdin.read()
     fifo_write.write(input_str)

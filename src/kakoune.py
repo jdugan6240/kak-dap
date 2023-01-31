@@ -3,12 +3,12 @@ import json
 import logging
 import os
 from pathlib import Path
-from schema import Schema, SchemaError
+from schema import Optional, Schema, SchemaError
 import socket
 import sys
 import xdg
 
-kak_schema = Schema({'cmd': str, 'args': {str: object}})
+kak_schema = Schema({'cmd': str, Optional('args'): {str: object}})
 
 
 class KakConnection:
