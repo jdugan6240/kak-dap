@@ -8,7 +8,7 @@ import socket
 import sys
 import xdg
 
-kak_schema = Schema({'cmd': str, Optional('args'): {str: object}})
+kak_schema = Schema({"cmd": str, Optional("args"): {str: object}})
 
 
 class KakConnection:
@@ -33,8 +33,8 @@ class KakConnection:
         Retrieves a message on the input socket.
         """
         # Retrieve the message from the FIFO
-        result_str = ''
-        with open(self.in_fifo_path, 'r') as fifo:
+        result_str = ""
+        with open(self.in_fifo_path, "r") as fifo:
             while True:
                 data = fifo.read()
                 if len(data) == 0:
@@ -45,7 +45,7 @@ class KakConnection:
         try:
             kak_schema.validate(result_msg)
         except SchemaError as e:
-            logging.error(f'Error validating command: {e}')
+            logging.error(f"Error validating command: {e}")
             return None
 
         return result_msg
@@ -69,11 +69,11 @@ class KakConnection:
              - Command string
         Return whether the communication was successful.
         """
-        b_cmd = cmd.encode('utf-8')
+        b_cmd = cmd.encode("utf-8")
         sock = socket.socket(socket.AF_UNIX)
         sock.connect(self.out_socket_path)
         b_content = self._encode_length(len(b_cmd)) + b_cmd
-        b_header = b'\x02' + self._encode_length(len(b_content) + 5)
+        b_header = b"\x02" + self._encode_length(len(b_content) + 5)
         b_message = b_header + b_content
         return sock.send(b_message) == len(b_message)
 
@@ -104,12 +104,10 @@ class KakConnection:
         # - otherwise, /tmp/kakoune-$USER/<session>.
         xdg_runtime_dir = xdg.xdg_runtime_dir()
         if xdg_runtime_dir is None:
-            tmpdir = os.environ.get('TMPDIR', '/tmp')
-            session_path = (
-                Path(tmpdir) / f'kakoune-{os.environ["USER"]}/{session}'
-            )
+            tmpdir = os.environ.get("TMPDIR", "/tmp")
+            session_path = Path(tmpdir) / f'kakoune-{os.environ["USER"]}/{session}'
         else:
-            session_path = xdg_runtime_dir / f'kakoune/{session}'
+            session_path = xdg_runtime_dir / f"kakoune/{session}"
         return session_path.as_posix()
 
     @staticmethod
@@ -121,9 +119,9 @@ class KakConnection:
         # According to the XDG Base Directory specification, XDG_RUNTIME_DIR
         # can be undefined. Therefore, as a backup, we use the ~/.kak-dap/
         # directory.
-        fifo_path = Path.home() / '/.kak-dap'
+        fifo_path = Path.home() / "/.kak-dap"
         if xdg.xdg_runtime_dir() is not None:
-            fifo_path = xdg.xdg_runtime_dir() / 'kak-dap'
+            fifo_path = xdg.xdg_runtime_dir() / "kak-dap"
         if not fifo_path.exists():
             fifo_path.mkdir()
-        return fifo_path.as_posix() + f'/{session}.fifo'
+        return fifo_path.as_posix() + f"/{session}.fifo"

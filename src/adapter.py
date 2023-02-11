@@ -10,8 +10,8 @@ except Exception:
 
 
 def reader_thread(rfile, q):
-    data = b''
-    state = 'HEADER'
+    data = b""
+    state = "HEADER"
     content_length = 0
     body_length = 0
 
@@ -19,33 +19,33 @@ def reader_thread(rfile, q):
     while not rfile.closed:
         data += rfile.read(1)
         # If we are reading the header
-        if state == 'HEADER':
+        if state == "HEADER":
             # Ensure the data string ends in \r\n\r\n
-            if data.endswith(b'\r\n\r\n'):
+            if data.endswith(b"\r\n\r\n"):
                 # Grab the content length
-                state = 'BODY'
-                headers = data.split(b'\r\n\r\n')[0]
-                _, header = headers.split(b'Content-Length:')
+                state = "BODY"
+                headers = data.split(b"\r\n\r\n")[0]
+                _, header = headers.split(b"Content-Length:")
                 content_length = int(header.strip())
-                data = b''
+                data = b""
         else:
             # We are reading the message body
             body_length += 1
             # If we have read the whole message, parse it and reset
             if body_length == content_length:
-                msg_str = data.decode('utf-8')
-                logging.debug(f'From debug adapter: {msg_str}')
+                msg_str = data.decode("utf-8")
+                logging.debug(f"From debug adapter: {msg_str}")
                 msg = json.loads(msg_str)
                 q.put(msg)
-                state = 'HEADER'
+                state = "HEADER"
                 body_length = 0
-                data = b''
+                data = b""
 
 
 def stderr_thread(rfile, q):
     while rfile.closed:
         line = rfile.readline()
-        logging.error(f'From debug adapter: {line}')
+        logging.error(f"From debug adapter: {line}")
 
 
 class AdapterOutput:
@@ -71,21 +71,17 @@ class AdapterInput:
             # Construct message string with header
             body = json.dumps(msg)
             content_length = (
-                len(body)
-                if isinstance(body, bytes)
-                else len(body.encode('utf-8'))
+                len(body) if isinstance(body, bytes) else len(body.encode("utf-8"))
             )
 
-            msg = 'Content-Length: {}\r\n\r\n' '{}'.format(
-                content_length, body
-            )
-            logging.debug(f'Writing: {msg}')
+            msg = "Content-Length: {}\r\n\r\n" "{}".format(content_length, body)
+            logging.debug(f"Writing: {msg}")
             # Write to the process' stdout
-            self._wfile.write(msg.encode('utf-8'))
+            self._wfile.write(msg.encode("utf-8"))
             self._wfile.flush()
         except Exception as e:
-            logging.error(f'Failed to write {msg} message to adapter')
-            logging.error(f'Reason: {e}')
+            logging.error(f"Failed to write {msg} message to adapter")
+            logging.error(f"Reason: {e}")
 
 
 class Adapter(object):
@@ -98,9 +94,7 @@ class Adapter(object):
         proc_args = [binary]
         for i in range(len(args)):
             proc_args.append(args[i])
-        self._adapter_process = Popen(
-            proc_args, stdin=PIPE, stdout=PIPE, stderr=PIPE
-        )
+        self._adapter_process = Popen(proc_args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
         self.next_req_id = 0
 
@@ -115,12 +109,12 @@ class Adapter(object):
 
     def write_request(self, cmd, args, callback):
         msg = {
-            'type': 'request',
-            'seq': self.next_req_id,
-            'command': cmd,
-            'arguments': args,
+            "type": "request",
+            "seq": self.next_req_id,
+            "command": cmd,
+            "arguments": args,
         }
-        logging.debug(f'To debug adapter: {msg}')
+        logging.debug(f"To debug adapter: {msg}")
         self._adapter_input.write_msg(msg)
         self._handlers[self.next_req_id] = callback
         self.next_req_id += 1
@@ -129,13 +123,13 @@ class Adapter(object):
         # Only one reverse request we support right now
         # So assume runInTerminal
         msg = {
-            'type': 'response',
-            'seq': self.next_req_id,
-            'request_seq': seq,
-            'success': True,
-            'command': 'runInTerminal',
+            "type": "response",
+            "seq": self.next_req_id,
+            "request_seq": seq,
+            "success": True,
+            "command": "runInTerminal",
         }
-        logging.debug(f'To debug adapter: {msg}')
+        logging.debug(f"To debug adapter: {msg}")
         self._adapter_input.write_msg(msg)
         self.next_req_id += 1
 

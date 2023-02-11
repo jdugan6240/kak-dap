@@ -9,18 +9,18 @@ breakpoint_data = {}  # filepath: line_nos
 def process_breakpoints():
     global breakpoint_data
     # First ensure we have breakpoints to retrieve
-    if 'kak_opt_dap_breakpoints_info' not in os.environ:
+    if "kak_opt_dap_breakpoints_info" not in os.environ:
         return
     # Retrieve breakpoints
-    breakpoints_info = os.environ['kak_opt_dap_breakpoints_info']
-    logging.debug(f'Breakpoint string: {breakpoints_info}')
+    breakpoints_info = os.environ["kak_opt_dap_breakpoints_info"]
+    logging.debug(f"Breakpoint string: {breakpoints_info}")
     split_breaks = breakpoints_info.split()
     # Parse breakpoints
     for val in split_breaks:
-        break_vals = val.split('|')
+        break_vals = val.split("|")
         line_no = break_vals[0]
         filepath = break_vals[1]
-        logging.debug(f'Breakpoint filepath: {filepath}, line no: {line_no}')
+        logging.debug(f"Breakpoint filepath: {filepath}, line no: {line_no}")
         # If we already have breakpoints under this filepath, just add another
         if filepath in breakpoint_data.keys():
             breakpoint_data[filepath].append(line_no)
@@ -37,12 +37,12 @@ def handle_initialized_event(msg):
         breakpoints = []
         lines = breakpoint_data[source]
         for line in lines:
-            breakpoints.append({'line': int(line)})
-        break_args = {'source': {'path': source}, 'breakpoints': breakpoints}
+            breakpoints.append({"line": int(line)})
+        break_args = {"source": {"path": source}, "breakpoints": breakpoints}
         requests.append(break_args)
     for req in requests:
         debug_session.debug_adapter.write_request(
-            'setBreakpoints', req, lambda *args: None
+            "setBreakpoints", req, lambda *args: None
         )
 
     # Now send the configurationDone request.
@@ -50,9 +50,9 @@ def handle_initialized_event(msg):
     # capability.
     if (
         general.capabilities is not None
-        and 'supportsConfigurationDoneRequest' in general.capabilities
-        and general.capabilities['supportsConfigurationDoneRequest']
+        and "supportsConfigurationDoneRequest" in general.capabilities
+        and general.capabilities["supportsConfigurationDoneRequest"]
     ):
         debug_session.debug_adapter.write_request(
-            'configurationDone', {}, lambda *args: None
+            "configurationDone", {}, lambda *args: None
         )
