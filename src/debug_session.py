@@ -4,6 +4,7 @@ import config
 import general
 from kakoune import KakConnection
 import logging
+import stacktrace
 import threading
 import time
 
@@ -84,6 +85,10 @@ def handle_event(msg):
             )
             kak_cmd = f"dap-output {category_str} '{kak_connection.escape_str(msg['output'])}'"
             kak_connection.send_cmd(kak_cmd)
+    elif event == 'initialized':
+        breakpoints.handle_initialized_event(msg)
+    elif event == 'stopped':
+        stacktrace.handle_stopped_event(msg)
 
 
 def handle_reverse_request(msg):

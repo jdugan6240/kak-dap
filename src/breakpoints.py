@@ -37,7 +37,7 @@ def handle_initialized_event(msg):
         breakpoints = []
         lines = breakpoint_data[source]
         for line in lines:
-            breakpoints.append({'line': line})
+            breakpoints.append({'line': int(line)})
         break_args = {'source': {'path': source}, 'breakpoints': breakpoints}
         requests.append(break_args)
     for req in requests:
@@ -50,7 +50,8 @@ def handle_initialized_event(msg):
     # capability.
     if (
         general.capabilities is not None
-        and general.capabilities['supportsConfigurationRequest']
+        and 'supportsConfigurationDoneRequest' in general.capabilities
+        and general.capabilities['supportsConfigurationDoneRequest']
     ):
         debug_session.debug_adapter.write_request(
             'configurationDone', {}, lambda *args: None
