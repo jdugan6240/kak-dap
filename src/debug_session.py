@@ -117,19 +117,27 @@ def handle_kak_command(cmd):
         # once stdio streams are closed
         quit(current_session)
     elif cmd["cmd"] == "continue":
-        # TODO
-        pass
+        continue_args = {
+            "threadId": stacktrace.cur_thread
+        }
+        debug_adapter.write_request("continue", continue_args, lambda *args: None)
     elif cmd["cmd"] == "next":
-        # TODO
-        pass
+        next_args = {
+            "threadId": stacktrace.cur_thread
+        }
+        debug_adapter.write_request("next", next_args, lambda *args: None)
     elif cmd["cmd"] == "pid":
         debug_adapter.write_response(general.last_adapter_seq)
     elif cmd["cmd"] == "stepIn":
-        # TODO
-        pass
+        step_in_args = {
+            "threadId": stacktrace.cur_thread
+        }
+        debug_adapter.write_request("stepIn", step_in_args, lambda *args: None)
     elif cmd["cmd"] == "stepOut":
-        # TODO
-        pass
+        step_out_args = {
+            "threadId": stacktrace.cur_thread
+        }
+        debug_adapter.write_request("stepOut", step_out_args, lambda *args: None)
     elif cmd["cmd"] == "evaluate":
         # TODO
         pass
