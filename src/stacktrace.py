@@ -1,5 +1,6 @@
 import debug_session
 import logging
+import variables
 
 cur_thread = -1
 threads = []
@@ -86,5 +87,13 @@ def handle_stack_trace_response(msg):
     cmd += "'"
     debug_session.kak_connection.send_cmd(cmd)
 
-    # TODO: Send a "Scopes" command to begin filling out the variable heirarchy
+    # Send a "Scopes" command to begin filling out the variable heirarchy
     # of the current stack frame.
+    scopes_id = int(frames[0]["id"])
+    scopes_args = {
+        "frameId": scopes_id
+    }
+    debug_session.debug_adapter.write_request(
+        "scopes", scopes_args, variables.handle_scopes_response
+    )
+    

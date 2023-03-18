@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+import pwd
 from schema import Optional, Schema, SchemaError
 import xdg
 import yaml
@@ -25,7 +26,7 @@ def get_adapter_config():
 
     # Perform any substitutions
     config_data = config_data.replace("${HOME}", os.getenv("HOME"))
-    config_data = config_data.replace("${USER}", os.getlogin())
+    config_data = config_data.replace("${USER}", pwd.getpwuid(os.getuid()).pw_name)
     config_data = config_data.replace("${CUR_DIR}", os.getcwd())
     config_data = config_data.replace("$$", "$")
 
@@ -67,7 +68,7 @@ def get_project_config():
 
     # Perform any substitutions
     config_data = config_data.replace("${HOME}", os.getenv("HOME"))
-    config_data = config_data.replace("${USER}", os.getlogin())
+    config_data = config_data.replace("${USER}", pwd.getpwuid(os.getuid()).pw_name)
     config_data = config_data.replace("${CUR_DIR}", os.getcwd())
     config_data = config_data.replace("$$", "$")
 

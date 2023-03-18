@@ -119,7 +119,7 @@ class KakConnection:
         # According to the XDG Base Directory specification, XDG_RUNTIME_DIR
         # can be undefined. Therefore, as a backup, we use the ~/.kak-dap/
         # directory.
-        fifo_path = Path.home() / "/.kak-dap"
+        fifo_path = Path.home() / ".kak-dap"
         if xdg.xdg_runtime_dir() is not None:
             fifo_path = xdg.xdg_runtime_dir() / "kak-dap"
         if not fifo_path.exists():
