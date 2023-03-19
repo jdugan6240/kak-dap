@@ -4,6 +4,8 @@ from functools import partial
 
 scopes = []
 pending_var_requests = 0
+line_to_var = {}
+cur_line = 0
 
 
 class Expandable:
@@ -53,25 +55,32 @@ def handle_variables_response(msg, parent):
 
 
 def serialize_scopes():
+    global cur_line, line_to_var
+    line_to_var.clear()
+
     cmd = "dap-show-variables '"
     cmd_val = ""
+    cur_line = 1
     for scope in scopes:
         scope_name = scope.contents["name"]
         cmd_val += f"Scope: {scope_name}"
         cmd_val += "\n"
+        cur_line += 1
         # If this scope has child variables, render them
         if len(scope.children) != 0:
             cmd_val += serialize_variables(scope.children, 2)
 
     cmd += debug_session.kak_connection.escape_str(cmd_val)
     cmd += "'"
-    debug_session.kak_connection.send_cmd(cmd)    
+    debug_session.kak_connection.send_cmd(cmd)
 
 
 def serialize_variables(variables, indent):
+    global cur_line, line_to_var
     val = ""
-    icon = " " # + if collapsed, - if expanded, ' ' otherwise
+    icon = " "  # + if collapsed, - if expanded, ' ' otherwise
     for var in variables:
+        line_to_var[cur_line] = var
         # Indent
         for i in range(0, indent):
             val += " "
@@ -86,7 +95,29 @@ def serialize_variables(variables, indent):
         var_value = var.contents["value"]
         val += f"{icon} "
         val += f"{var_name} ({var_type}): {var_value}\n"
+        cur_line += 1
         # If variable is expanded, render children
         if len(var.children) != 0:
             val += serialize_variables(var.children, indent + 2)
     return val
+
+
+def expand_variable(line):
+    global pending_var_requests
+    # If this is a line with a variable, then expand it
+    if line in line_to_var.keys():
+        parent = line_to_var[line]
+        # If the variable has children, it's expanded, so collapse it
+        if len(parent.children) != 0:
+            parent.children.clear()
+            serialize_scopes()
+        elif parent.variable_reference > 0:
+            # This isn't expanded, but is expandable. Expand it.
+            var_args = {
+                "variablesReference": parent.variable_reference
+            }
+            pending_var_requests += 1
+            debug_session.debug_adapter.write_request(
+                "variables", var_args, partial(
+                    handle_variables_response, parent=parent)
+            )

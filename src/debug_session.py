@@ -7,6 +7,7 @@ import logging
 import stacktrace
 import threading
 import time
+import variables
 
 adapter_config = None  # The global adapter configuration
 debug_adapter = None  # The connection to the debug adapter
@@ -112,6 +113,7 @@ def adapter_msg_thread():
 
 
 def handle_kak_command(cmd):
+    logging.debug(f"Received command: {cmd}")
     if cmd["cmd"] == "stop":
         # We currently rely on the adapter terminating the debuggee
         # once stdio streams are closed
@@ -142,8 +144,7 @@ def handle_kak_command(cmd):
         # TODO
         pass
     elif cmd["cmd"] == "expand":
-        # TODO
-        pass
+        variables.expand_variable(int(cmd["args"]["line"]))
 
 
 def start(session):

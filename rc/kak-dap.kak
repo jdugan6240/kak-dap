@@ -267,15 +267,15 @@ define-command -hidden dap-show-variables -params 1 %{
 
 define-command -hidden dap-expand-variable %{
     evaluate-commands -try-client %opt{variablesclient} %{
-        # Get variable we're expanding
-        execute-keys -save-regs '' "ghwwwW"
-        set-register t %val{selection}
+        # Send current line to kak-dap to expand
         set-option global dap_variables_cursor_line %val{cursor_line}
         nop %sh{
-            value="${kak_reg_t}"
+            value="${kak_opt_dap_variables_cursor_line}"
             printf '{
             "cmd": "expand",
-            "args": "%s"
+            "args": {
+            "line": "%s"
+            }
             }' $value | eval "${kak_opt_dap_cmd} --request"
         }
     }
