@@ -28,12 +28,11 @@ def handle_scopes_response(msg):
         scopes.append(scope)
         # Request variables for this scope
         var_ref = int(val["variablesReference"])
-        var_args = {
-            "variablesReference": var_ref
-        }
+        var_args = {"variablesReference": var_ref}
         pending_var_requests += 1
         debug_session.debug_adapter.write_request(
-            "variables", var_args, partial(handle_variables_response, parent=scope))
+            "variables", var_args, partial(handle_variables_response, parent=scope)
+        )
 
 
 def handle_variables_response(msg, parent):
@@ -113,11 +112,8 @@ def expand_variable(line):
             serialize_scopes()
         elif parent.variable_reference > 0:
             # This isn't expanded, but is expandable. Expand it.
-            var_args = {
-                "variablesReference": parent.variable_reference
-            }
+            var_args = {"variablesReference": parent.variable_reference}
             pending_var_requests += 1
             debug_session.debug_adapter.write_request(
-                "variables", var_args, partial(
-                    handle_variables_response, parent=parent)
+                "variables", var_args, partial(handle_variables_response, parent=parent)
             )

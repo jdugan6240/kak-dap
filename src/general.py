@@ -43,3 +43,17 @@ def handle_run_in_terminal_request(msg):
         cmd += " "
 
     debug_session.kak_connection.send_cmd(cmd)
+
+
+def handle_evaluate_response(msg):
+    # Get the result and type
+    result = msg["body"]["result"]
+    type = msg["body"]["type"]
+
+    # Send it to Kakoune for processing
+    cmd = "dap-evaluate-response ' "
+    cmd += debug_session.kak_connection.escape_str(str(result))
+    cmd += " ' ' "
+    cmd += debug_session.kak_connection.escape_str(str(type))
+    cmd += " '"
+    debug_session.kak_connection.send_cmd(cmd)

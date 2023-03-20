@@ -119,30 +119,26 @@ def handle_kak_command(cmd):
         # once stdio streams are closed
         quit(current_session)
     elif cmd["cmd"] == "continue":
-        continue_args = {
-            "threadId": stacktrace.cur_thread
-        }
+        continue_args = {"threadId": stacktrace.cur_thread}
         debug_adapter.write_request("continue", continue_args, lambda *args: None)
     elif cmd["cmd"] == "next":
-        next_args = {
-            "threadId": stacktrace.cur_thread
-        }
+        next_args = {"threadId": stacktrace.cur_thread}
         debug_adapter.write_request("next", next_args, lambda *args: None)
     elif cmd["cmd"] == "pid":
         debug_adapter.write_response(general.last_adapter_seq)
     elif cmd["cmd"] == "stepIn":
-        step_in_args = {
-            "threadId": stacktrace.cur_thread
-        }
+        step_in_args = {"threadId": stacktrace.cur_thread}
         debug_adapter.write_request("stepIn", step_in_args, lambda *args: None)
     elif cmd["cmd"] == "stepOut":
-        step_out_args = {
-            "threadId": stacktrace.cur_thread
-        }
+        step_out_args = {"threadId": stacktrace.cur_thread}
         debug_adapter.write_request("stepOut", step_out_args, lambda *args: None)
     elif cmd["cmd"] == "evaluate":
-        # TODO
-        pass
+        # Extract the expression and send an "evaluate" command to the debugger
+        expr = cmd["args"]["expression"]
+        eval_args = {"expression": expr, "frameId": stacktrace.cur_stack_id}
+        debug_adapter.write_request(
+            "evaluate", eval_args, general.handle_evaluate_response
+        )
     elif cmd["cmd"] == "expand":
         variables.expand_variable(int(cmd["args"]["line"]))
 

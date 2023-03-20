@@ -166,7 +166,9 @@ define-command dap-step-out %{ nop %sh{
 define-command dap-evaluate -params 1 %{ nop %sh{
     printf '{
     "cmd": "evaluate",
-    "args": "%s"
+    "args": {
+    "expression": "%s"
+    }
     }' "$1" | eval "${kak_opt_dap_cmd} --request"
 }}
 

@@ -4,6 +4,7 @@ import variables
 
 cur_thread = -1
 threads = []
+cur_stack_id = 0
 
 
 def handle_stopped_event(msg):
@@ -17,9 +18,7 @@ def handle_stopped_event(msg):
         cur_thread = msg["body"]["threadId"]
 
     # Request threads
-    debug_session.debug_adapter.write_request(
-        "threads", {}, handle_threads_response
-    )
+    debug_session.debug_adapter.write_request("threads", {}, handle_threads_response)
 
 
 def handle_threads_response(msg):
@@ -41,6 +40,7 @@ def handle_threads_response(msg):
 
 
 def handle_stack_trace_response(msg):
+    global cur_stack_id
     frames = msg["body"]["stackFrames"]
 
     # Get first stack frame to obtain current execution location
@@ -90,10 +90,8 @@ def handle_stack_trace_response(msg):
     # Send a "Scopes" command to begin filling out the variable heirarchy
     # of the current stack frame.
     scopes_id = int(frames[0]["id"])
-    scopes_args = {
-        "frameId": scopes_id
-    }
+    cur_stack_id = scopes_id
+    scopes_args = {"frameId": scopes_id}
     debug_session.debug_adapter.write_request(
         "scopes", scopes_args, variables.handle_scopes_response
     )
-    
