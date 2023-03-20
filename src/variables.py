@@ -77,8 +77,8 @@ def serialize_scopes():
 def serialize_variables(variables, indent):
     global cur_line, line_to_var
     val = ""
-    icon = " "  # + if collapsed, - if expanded, ' ' otherwise
     for var in variables:
+        icon = " "  # + if collapsed, - if expanded, ' ' otherwise
         line_to_var[cur_line] = var
         # Indent
         for i in range(0, indent):
