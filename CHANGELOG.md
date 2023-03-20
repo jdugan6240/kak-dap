@@ -1,7 +1,13 @@
 ## Unreleased
 
+Changes:
+- Complete rewrite in Python
+- .kak-dap.json is now .kak-dap.yaml
+- Adapters now defined in adapters.yaml in repo or ~/.config/kak-dap/adapters.yaml
+
 Additions:
-- Added repeatable -v flag to `kak-dap` binary to customize verbosity of logging
+- Added repeatable -v flag to `kak-dap` to customize verbosity of logging
+- Multiple debug configurations can now be defined in a single project
 - `dap-continue` now starts debugging session if one isn't running
 - Added dap-output command to show output events to the user
 - Basic syntax highlighting for variables buffer
@@ -10,6 +16,7 @@ Additions:
 Bug Fixes:
 - Logging to file would occasionally produce binary (aka unreadable) output
 - Expanding/collapsing variables no longer causes cursor to jump to line 1
+- Non-expandable variables no longer show as expandable
 
 ## 1.1.0 - 2022-03-22
 
