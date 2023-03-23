@@ -88,6 +88,10 @@ def handle_event(msg):
         breakpoints.handle_initialized_event(msg)
     elif event == "stopped":
         stacktrace.handle_stopped_event(msg)
+    elif event == "exited":
+        quit(kak_connection.session)
+    elif event == "terminated":
+        quit(kak_connection.session)
 
 
 def handle_reverse_request(msg):
