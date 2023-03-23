@@ -32,7 +32,7 @@ parser.add_argument(
     required=True,
     help="Kakoune session to communicate with",
 )
-parser.add_argument("-l", "--log", help="Write log to file", action="store_true")
+parser.add_argument("-l", "--log", type=str, help="Write log to file")
 parser.add_argument(
     "-v", "--verbosity", help="increase logging verbosity", action="count"
 )
@@ -59,7 +59,7 @@ if args.request:
 
 # Determine log level
 verbosity = 2
-if args.verbosity > 0:
+if args.verbosity:
     verbosity = args.verbosity
 log_level = logging.CRITICAL
 if verbosity == 2:
@@ -73,12 +73,7 @@ elif verbosity == 5:
 
 # If the log flag is set, write log to a file
 if args.log:
-    # Create directory where logfiles go, if it doesn't exist already
-    logfile_path = xdg.xdg_data_home() / "kak-dap"
-    if not logfile_path.exists():
-        logfile_path.mkdir()
-
-    logfile = logfile_path.as_posix() + "/kak-dap.log"
+    logfile = args.log
 
     # If the file exists, delete it.
     # We don't want many sessions worth of logs.
