@@ -42,7 +42,24 @@ def start_adapter():
     # TODO: send menu request to Kakoune with configuration names,
     # and choose the name the user chooses, instead of just going
     # with the first one.
-    selected_config = project_config["configurations"][names[0]]
+    if len(names) == 1:
+        # Just one config. Don't bother making options.
+        selected_config = project_config["configurations"][names[0]]
+    else:
+        # Present options so user can select config
+        kak_cmd = "try %{ eval -client %opt{jumpclient} %{ dap-select-config "
+        for name in names:
+            kak_cmd += f"{name} "
+        kak_cmd += " }}"
+        kak_connection.send_cmd(kak_cmd)
+        # Wait until we get the proper response
+        # NOTE this will not terminate until we get a response.
+        while True:
+            msg = kak_connection.get_msg()
+            if msg["cmd"] == "select-config":
+                name = msg["args"]["config"]
+                selected_config = project_config["configurations"][name]
+                break
 
     selected_adapter = selected_config["adapter"]
 
@@ -124,7 +141,8 @@ def handle_kak_command(cmd):
         quit(current_session)
     elif cmd["cmd"] == "continue":
         continue_args = {"threadId": stacktrace.cur_thread}
-        debug_adapter.write_request("continue", continue_args, lambda *args: None)
+        debug_adapter.write_request(
+            "continue", continue_args, lambda *args: None)
     elif cmd["cmd"] == "next":
         next_args = {"threadId": stacktrace.cur_thread}
         debug_adapter.write_request("next", next_args, lambda *args: None)
@@ -135,7 +153,8 @@ def handle_kak_command(cmd):
         debug_adapter.write_request("stepIn", step_in_args, lambda *args: None)
     elif cmd["cmd"] == "stepOut":
         step_out_args = {"threadId": stacktrace.cur_thread}
-        debug_adapter.write_request("stepOut", step_out_args, lambda *args: None)
+        debug_adapter.write_request(
+            "stepOut", step_out_args, lambda *args: None)
     elif cmd["cmd"] == "evaluate":
         # Extract the expression and send an "evaluate" command to the debugger
         expr = cmd["args"]["expression"]

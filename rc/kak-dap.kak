@@ -172,6 +172,23 @@ define-command dap-evaluate -params 1 %{ nop %sh{
     }' "$1" | eval "${kak_opt_dap_cmd} --request"
 }}
 
+#
+# Misc commands called by kak-dap server
+#
+
+define-command dap-select-config -params 2.. %{
+    evaluate-commands %sh{
+        command="menu "
+        for config in "$@"; do
+            command=$command"$config "
+            config_cmd=$(printf '{"cmd": "select-config", "args": {"config": "%s"}}' "$config")
+            printf "%s\n" "echo -debug $config_cmd"
+            command=$command"%{ nop %sh{ printf '%s\n' '$config_cmd' | eval '${kak_opt_dap_cmd} --request' } } "
+        done
+        printf "%s\n" "$command"
+    }
+}
+
 define-command dap-set-location -params 2 %{
     set-option global dap_location_info "%arg{1}|%arg{2}"
     try %{ eval -client %opt{jumpclient} dap-refresh-location-flag %arg{2} }
