@@ -5,8 +5,6 @@ adapters:
             - "-m"
             - "debugpy.adapter"
     readapt:
-        executable: "bundle"
+        executable: "readapt"
         args:
-            - "exec"
-            - "readapt"
             - "stdio"

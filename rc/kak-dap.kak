@@ -131,6 +131,56 @@ define-command dap-toggle-breakpoint %{ eval %sh{
     fi
 }}
 
+define-command dap-install -params 1 -shell-script-candidates %{
+    files=$(ls $kak_opt_dap_dir/../installers)
+    for file in $files; do
+        if [ -f "${kak_opt_dap_dir}/../installers/${file}" ]; then
+            printf "%s\n" "${file%.*}"
+        fi
+    done
+} %{
+    evaluate-commands %sh{
+        output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-dap-install-XXXXXXX)/fifo
+        mkfifo ${output}
+
+        ( {
+            python "${kak_opt_dap_dir}/../installers/${1}.py"
+            printf "Done. Press <esc> to exit.\n"
+        } > "$output" 2>&1 & ) > /dev/null 2>&1 < /dev/null
+
+        printf "%s\n" \
+            "edit! -fifo ${output} -scroll *dap-install*" \
+            'map buffer normal <esc> %{: delete-buffer *dap-install*<ret>}' \
+            "hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r $(dirname ${output}) } }"
+
+    }
+}
+
+
+define-command dap-uninstall -params 1 -shell-script-candidates %{
+    files=$(ls $kak_opt_dap_dir/../installers)
+    for file in $files; do
+        if [ -f "${kak_opt_dap_dir}/../installers/${file}" ]; then
+            printf "%s\n" "${file%.*}"
+        fi
+    done
+} %{
+    evaluate-commands %sh{
+        output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-dap-uninstall-XXXXXXX)/fifo
+        mkfifo "$output"
+
+        ( {
+            python "${kak_opt_dap_dir}/../installers/${1}.py" "uninstall"
+            printf "Done. Press <esc> to exit.\n"
+        } > "$output" 2>&1 & ) > /dev/null 2>&1 < /dev/null
+
+        printf "%s\n" \
+            "edit! -fifo ${output} -scroll *dap-uninstall*" \
+            'map buffer normal <esc> %{: delete-buffer *dap-uninstall*<ret>}' \
+            "hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r $(dirname ${output}) } }"
+    }
+}
+
 #
 # Commands sent directly to debug adapter
 #

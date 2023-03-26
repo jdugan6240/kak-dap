@@ -99,16 +99,16 @@ def handle_event(msg):
         if output_category is None or output_category != "telemetry":
             # We don't have a telemetry event - send it to Kakoune.
             category_str = output_category if output_category is not None else "output"
-            kak_cmd = f"dap-output {category_str} '{kak_connection.escape_str(msg['output'])}'"
+            kak_cmd = f"dap-output {category_str} '{kak_connection.escape_str(msg['body']['output'])}'"
             kak_connection.send_cmd(kak_cmd)
     elif event == "initialized":
         breakpoints.handle_initialized_event(msg)
     elif event == "stopped":
         stacktrace.handle_stopped_event(msg)
     elif event == "exited":
-        quit(kak_connection.session)
+        quit(current_session)
     elif event == "terminated":
-        quit(kak_connection.session)
+        quit(current_session)
 
 
 def handle_reverse_request(msg):
