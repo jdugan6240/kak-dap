@@ -8,3 +8,7 @@ adapters:
         executable: "readapt"
         args:
             - "stdio"
+    cpptools:
+        name: "cppdbg" # This is needed for cpptools to work properly
+        executable: "${ADAPTER_DIR}/cpptools/extension/debugAdapters/bin/OpenDebugAD7"
+        args: []

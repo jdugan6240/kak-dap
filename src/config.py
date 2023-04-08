@@ -10,7 +10,9 @@ project_schema = Schema(
     {"configurations": {str: {"adapter": str, "launch_args": {str: object}}}}
 )
 
-adapter_schema = Schema({"adapters": {str: {"executable": str, "args": [str]}}})
+adapter_schema = Schema(
+    {"adapters": {str: {Optional("name"): str, "executable": str, "args": [str]}}}
+)
 
 
 def get_adapter_config():
@@ -28,6 +30,9 @@ def get_adapter_config():
     config_data = config_data.replace("${HOME}", os.getenv("HOME"))
     config_data = config_data.replace("${USER}", pwd.getpwuid(os.getuid()).pw_name)
     config_data = config_data.replace("${CUR_DIR}", os.getcwd())
+    config_data = config_data.replace(
+        "${ADAPTER_DIR}", os.path.expanduser("~/.kak-dap/adapters")
+    )
     config_data = config_data.replace("$$", "$")
 
     # Parse yaml and attempt to validate against adapter schema
@@ -70,6 +75,9 @@ def get_project_config():
     config_data = config_data.replace("${HOME}", os.getenv("HOME"))
     config_data = config_data.replace("${USER}", pwd.getpwuid(os.getuid()).pw_name)
     config_data = config_data.replace("${CUR_DIR}", os.getcwd())
+    config_data = config_data.replace(
+        "${ADAPTER_DIR}", os.path.expanduser("~/.kak-dap/adapters")
+    )
     config_data = config_data.replace("$$", "$")
 
     # Parse yaml and attempt to validate against project schema

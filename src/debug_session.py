@@ -14,6 +14,7 @@ debug_adapter = None  # The connection to the debug adapter
 kak_connection = None  # The connection to the Kakoune session
 project_config = None  # The current project configuration
 selected_config = None  # The selected adapter configuration
+selected_adapter = None
 current_session = None
 
 
@@ -33,7 +34,7 @@ def quit(session):
 
 
 def start_adapter():
-    global debug_adapter, selected_config
+    global debug_adapter, selected_config, selected_adapter
     # For the time being, we're taking the first project configuration
     names = []
     for name in project_config["configurations"]:
@@ -61,20 +62,20 @@ def start_adapter():
                 selected_config = project_config["configurations"][name]
                 break
 
-    selected_adapter = selected_config["adapter"]
+    selected_adapter_name = selected_config["adapter"]
 
     # Now that we have the selected adapter,
     # find the matching adapter config and start the adapter
-    selected_adapter_cfg = adapter_config["adapters"][selected_adapter]
+    selected_adapter = adapter_config["adapters"][selected_adapter_name]
 
-    if selected_adapter_cfg is None:
-        logging.error(f"Invalid adapter in project config: {selected_adapter}")
+    if selected_adapter is None:
+        logging.error(f"Invalid adapter in project config: {selected_adapter_name}")
         quit(kak_connection.session)
 
-    logging.debug(f"Selected adapter config: {selected_adapter_cfg}")
+    logging.debug(f"Selected adapter config: {selected_adapter}")
 
-    adapter_exec = selected_adapter_cfg["executable"]
-    adapter_args = selected_adapter_cfg["args"]
+    adapter_exec = selected_adapter["executable"]
+    adapter_args = selected_adapter["args"]
 
     debug_adapter = Adapter(adapter_exec, adapter_args)
 
@@ -141,8 +142,7 @@ def handle_kak_command(cmd):
         quit(current_session)
     elif cmd["cmd"] == "continue":
         continue_args = {"threadId": stacktrace.cur_thread}
-        debug_adapter.write_request(
-            "continue", continue_args, lambda *args: None)
+        debug_adapter.write_request("continue", continue_args, lambda *args: None)
     elif cmd["cmd"] == "next":
         next_args = {"threadId": stacktrace.cur_thread}
         debug_adapter.write_request("next", next_args, lambda *args: None)
@@ -153,8 +153,7 @@ def handle_kak_command(cmd):
         debug_adapter.write_request("stepIn", step_in_args, lambda *args: None)
     elif cmd["cmd"] == "stepOut":
         step_out_args = {"threadId": stacktrace.cur_thread}
-        debug_adapter.write_request(
-            "stepOut", step_out_args, lambda *args: None)
+        debug_adapter.write_request("stepOut", step_out_args, lambda *args: None)
     elif cmd["cmd"] == "evaluate":
         # Extract the expression and send an "evaluate" command to the debugger
         expr = cmd["args"]["expression"]

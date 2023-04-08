@@ -19,8 +19,14 @@ def handle_initialize_response(msg):
 
 def initialize_adapter():
     # Send the intialize request
+    logging.debug(f"Keys: {debug_session.selected_adapter.keys()}")
+    logging.debug(f"Name in keys: {'name' in debug_session.selected_adapter}")
+    if "name" in debug_session.selected_adapter:
+        adapterID = debug_session.selected_adapter["name"]
+    else:
+        adapterID = debug_session.selected_adapter["adapter"]
     init_args = {
-        "adapterID": debug_session.selected_config["adapter"],
+        "adapterID": adapterID,
         "linesStartAt1": True,
         "columnsStartAt1": True,
         "pathFormat": "path",

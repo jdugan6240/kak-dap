@@ -5,16 +5,18 @@ from utils.installer_utils import check_call
 
 def install():
     try:
-        check_call(['gem', 'install', 'readapt'])
+        check_call(["gem", "install", "readapt"])
     except:
         print("Install failed. Perhaps Ruby or RubyGems isn't installed?")
 
 
 def uninstall():
     try:
-        check_call(['gem', 'uninstall', 'readapt'])
+        check_call(["gem", "uninstall", "readapt"])
     except:
-        print("Uninstall failed. Perhaps readapt was installed with a different method?")
+        print(
+            "Uninstall failed. Perhaps readapt was installed with a different method?"
+        )
 
 
 # If installing, there will be no command line arguments.
@@ -23,4 +25,3 @@ if len(sys.argv) > 1:
     uninstall()
 else:
     install()
-

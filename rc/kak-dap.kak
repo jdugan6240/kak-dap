@@ -144,7 +144,7 @@ define-command dap-install -params 1 -shell-script-candidates %{
         mkfifo ${output}
 
         ( {
-            python "${kak_opt_dap_dir}/../installers/${1}.py"
+            python -u "${kak_opt_dap_dir}/../installers/${1}.py"
             printf "Done. Press <esc> to exit.\n"
         } > "$output" 2>&1 & ) > /dev/null 2>&1 < /dev/null
 
@@ -170,7 +170,7 @@ define-command dap-uninstall -params 1 -shell-script-candidates %{
         mkfifo "$output"
 
         ( {
-            python "${kak_opt_dap_dir}/../installers/${1}.py" "uninstall"
+            python -u "${kak_opt_dap_dir}/../installers/${1}.py" "uninstall"
             printf "Done. Press <esc> to exit.\n"
         } > "$output" 2>&1 & ) > /dev/null 2>&1 < /dev/null
 

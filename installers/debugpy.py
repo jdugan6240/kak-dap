@@ -5,16 +5,18 @@ from utils.installer_utils import check_call
 
 def install():
     try:
-        check_call([sys.executable, '-m', 'pip', 'install', 'debugpy'])
+        check_call([sys.executable, "-m", "pip", "install", "debugpy"])
     except:
         print("Install failed. Perhaps pip isn't installed?")
 
 
 def uninstall():
     try:
-        check_call([sys.executable, '-m', 'pip', 'uninstall', 'debugpy', '-y'])
+        check_call([sys.executable, "-m", "pip", "uninstall", "debugpy", "-y"])
     except:
-        print("Uninstall failed. Perhaps debugpy was installed with a different method?")
+        print(
+            "Uninstall failed. Perhaps debugpy was installed with a different method?"
+        )
 
 
 # If installing, there will be no command line arguments.

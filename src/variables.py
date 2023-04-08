@@ -90,7 +90,10 @@ def serialize_variables(variables, indent):
                 icon = "-"
         # Render variable
         var_name = var.contents["name"]
-        var_type = var.contents["type"]
+        if "type" in var.contents:
+            var_type = var.contents["type"]
+        else:
+            var_type = "<unknown>"
         var_value = var.contents["value"]
         val += f"{icon} "
         val += f"{var_name} ({var_type}): {var_value}\n"
