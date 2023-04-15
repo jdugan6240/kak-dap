@@ -24,7 +24,7 @@ def initialize_adapter():
     if "name" in debug_session.selected_adapter:
         adapterID = debug_session.selected_adapter["name"]
     else:
-        adapterID = debug_session.selected_adapter["adapter"]
+        adapterID = debug_session.selected_config["adapter"]
     init_args = {
         "adapterID": adapterID,
         "linesStartAt1": True,

@@ -31,6 +31,12 @@ kak-dap requires Python 3.7 or later. Additionally, the following Python package
 
 If you haven't already, run `python -m pip install pyyaml schema xdg` to install the necessary packages.
 
+### Optional requirements
+
+For WezTerm support, install the following plugin:
+
+https://github.com/rzeigler/wezterm.kak
+
 ### Plug.kak
 
 If using `plug.kak` as your plugin manager, add the following to your kakrc:

@@ -47,7 +47,35 @@ hook global BufOpenFile .* %{
     dap-refresh-location-flag %val{buffile}
 }
 
-define-command dap-setup-ui %{
+define-command -hidden dap-setup-ui-tmux %{
+    # Setup the jump client
+    rename-client main
+    set-option global jumpclient main
+
+    # Setup the stacktrace client
+    tmux-terminal-vertical kak -c %val{session} -e "rename-client stacktrace"
+    set-option global stacktraceclient stacktrace
+
+    # Setup the variables client
+    tmux-terminal-horizontal kak -c %val{session} -e "rename-client variables"
+    set-option global variablesclient variables
+}
+
+define-command -hidden dap-setup-ui-wezterm %{
+    # Setup the jump client
+    rename-client main
+    set-option global jumpclient main
+
+    # Setup the stacktrace client
+    wezterm-terminal-vertical kak -c %val{session} -e "rename-client stacktrace"
+    set-option global stacktraceclient stacktrace
+
+    # Setup the variables client
+    wezterm-terminal-horizontal kak -c %val{session} -e "rename-client variables"
+    set-option global variablesclient variables
+}
+
+define-command -hidden dap-setup-ui-default %{
     # Setup the jump client
     rename-client main
     set global jumpclient main
@@ -61,8 +89,21 @@ define-command dap-setup-ui %{
     set global variablesclient variables
 }
 
+define-command dap-setup-ui %{
+    evaluate-commands %sh{
+        # Determine which windowing system is in use,
+        # and choose the correct one to setup our layout with.
+        if [ -n "$TMUX" ]; then
+            printf "%s\n" "dap-setup-ui-tmux"
+        elif [ -n "$WEZTERM_PANE" ]; then
+            printf "%s\n" "dap-setup-ui-wezterm"
+        else
+            printf "%s\n" "dap-setup-ui-default"
+        fi
+    }
+}
+
 define-command dap-takedown-ui %{
-    echo -debug "Doing it..."
     # Kill the stacktrace client
     evaluate-commands -try-client %opt{stacktraceclient} %{
         quit!
@@ -354,8 +395,34 @@ define-command -hidden dap-expand-variable %{
 # Responses to reverseRequests
 #
 
-define-command -hidden dap-run-in-terminal -params 1.. %{
+define-command -hidden dap-run-in-terminal-tmux -params 1.. %{
+    evaluate-commands -try-client %opt{stacktraceclient} %{
+        tmux-terminal-horizontal %arg{@}
+    }
+}
+
+define-command -hidden dap-run-in-terminal-wezterm -params 1.. %{
+    evaluate-commands -try-client %opt{stacktraceclient} %{
+        wezterm-terminal-horizontal %arg{@}
+    }
+}
+
+define-command -hidden dap-run-in-terminal-default -params 1.. %{
     terminal %arg{@}
+}
+
+define-command -hidden dap-run-in-terminal -params 1.. %{
+    evaluate-commands %sh{
+        # Determine which windowing system is in use,
+        # and choose the correct one.
+        if [ -n "$TMUX" ]; then
+            printf "%s %s\n" "dap-run-in-terminal-tmux" "$*"
+        elif [ -n "$WEZTERM_PANE" ]; then
+            printf "%s %s\n" "dap-run-in-terminal-wezterm" "$*"
+        else
+            printf "%s %s\n" "dap-run-in-terminal-default" "$*"
+        fi
+    }
     nop %sh{
         printf '{
         "cmd": "pid"
