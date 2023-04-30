@@ -1,0 +1,22 @@
+{
+    "adapters": {
+        "debugpy": {
+            "executable": "python",
+            "args": [
+                "-m",
+                "debugpy.adapter"
+            ]
+        },
+        "readapt": {
+            "executable": "readapt",
+            "args": [
+                "stdio"
+            ]
+        },
+        "cpptools": {
+            "name": "cppdbg",
+            "executable": "${ADAPTER_DIR}/cpptools/extension/debugAdapters/bin/OpenDebugAD7",
+            "args": []
+        }
+    }
+}

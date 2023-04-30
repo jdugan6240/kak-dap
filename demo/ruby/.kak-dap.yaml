@@ -1,6 +1,0 @@
-configurations:
-    ruby_test:
-        adapter: 'readapt'
-        launch_args:
-            program: '${CUR_DIR}/test.rb'
-            args: []

@@ -3,12 +3,18 @@ import json
 import logging
 import os
 from pathlib import Path
-from schema import Optional, Schema, SchemaError
 import socket
 import sys
-import xdg
+import xdg_utils as xdg
 
-kak_schema = Schema({"cmd": str, Optional("args"): {str: object}})
+
+def validate_kak_command(cmd):
+    # Command must have a cmd value
+    if "cmd" not in cmd.keys():
+        logging.error("Command must have 'cmd' value")
+        return False
+    return True
+
 
 
 class KakConnection:
@@ -42,13 +48,9 @@ class KakConnection:
                 result_str += data
         # Ensure message is kosher
         result_msg = json.loads(result_str)
-        try:
-            kak_schema.validate(result_msg)
-        except SchemaError as e:
-            logging.error(f"Error validating command: {e}")
-            return None
-
-        return result_msg
+        if validate_kak_command(result_msg):
+            return result_msg
+        return None
 
     def cleanup(self) -> None:
         """
@@ -105,10 +107,10 @@ class KakConnection:
         xdg_runtime_dir = xdg.xdg_runtime_dir()
         if xdg_runtime_dir is None:
             tmpdir = os.environ.get("TMPDIR", "/tmp")
-            session_path = Path(tmpdir) / f'kakoune-{os.environ["USER"]}/{session}'
+            session_path = tmpdir + f'/kakoune-{os.environ["USER"]}/{session}'
         else:
-            session_path = xdg_runtime_dir / f"kakoune/{session}"
-        return session_path.as_posix()
+            session_path = xdg_runtime_dir + f"/kakoune/{session}"
+        return session_path
 
     @staticmethod
     def _get_in_fifo_path(session: str) -> str:
@@ -121,7 +123,7 @@ class KakConnection:
         # directory.
         fifo_path = Path.home() / ".kak-dap"
         if xdg.xdg_runtime_dir() is not None:
-            fifo_path = xdg.xdg_runtime_dir() / "kak-dap"
+            fifo_path = Path(xdg.xdg_runtime_dir() + "/kak-dap")
         if not fifo_path.exists():
             fifo_path.mkdir()
         return fifo_path.as_posix() + f"/{session}.fifo"

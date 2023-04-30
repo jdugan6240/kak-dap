@@ -1,17 +1,11 @@
 {
-  // The binary run to start the debug adapter
-  "adapter": "bundle",
-  
-  // The arguments to the debug adapter, if any
-  "adapter_args": ["exec", "readapt", "stdio"],
-
-  // The adapter ID. Needed by some debug adapters.
-  "adapterID": "rubydbg",
-  
-  // The arguments sent to the "launch" request
-  // This will depend on the debug adapter being used
-  "launch_args": {
-    "program": "${CUR_DIR}/test.rb",
-    "args": []
-  }
+    "configurations": {
+        "ruby_test": {
+            "adapter": "readapt",
+            "launch_args": {
+                "program": "${CUR_DIR}/test.rb",
+                "args": []
+            }
+        }
+    }
 }
