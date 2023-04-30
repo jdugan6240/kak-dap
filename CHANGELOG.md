@@ -2,8 +2,8 @@
 
 Changes:
 - Complete rewrite in Python
-- .kak-dap.json is now .kak-dap.yaml
-- Adapters now defined in adapters.yaml in repo or ~/.config/kak-dap/adapters.yaml
+- Adapters now defined in adapters.json in repo or ~/.config/kak-dap/adapters.json
+- kak-dap will now attempt to detect which windowing system is being used for layout purposes
 
 Additions:
 - Added repeatable -v flag to `kak-dap` to customize verbosity of logging
@@ -12,6 +12,7 @@ Additions:
 - Added dap-output command to show output events to the user
 - Basic syntax highlighting for variables buffer
 - Added `dap` user mode
+- Added installers to help facilitate installing debug adapters
 
 Bug Fixes:
 - Logging to file would occasionally produce binary (aka unreadable) output

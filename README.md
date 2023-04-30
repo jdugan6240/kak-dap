@@ -23,13 +23,7 @@ When finished, it will work drastically differently from kak-dap 1.1.
 
 ### Requirements
 
-kak-dap requires Python 3.7 or later. Additionally, the following Python packages must be installed:
-
-- pyyaml
-- schema
-- xdg
-
-If you haven't already, run `python -m pip install pyyaml schema xdg` to install the necessary packages.
+kak-dap requires Python 3.7 or later. No other dependencies apart from Kakoune are required.
 
 ### Optional requirements
 
@@ -82,27 +76,46 @@ where <repository_dir> is the directory you cloned the repository to.
 
 An (old) demo of `kak-dap` can be found here: [![asciicast](https://asciinema.org/a/fjU1GBrXSxplfP6lEo7cqYcj9.svg)](https://asciinema.org/a/fjU1GBrXSxplfP6lEo7cqYcj9)
 
+### Installing adapters
+
+Before any debugging can happen, the adapter you need must be installed. kak-dap provides a means of installing these with the 'dap-install'
+command. Here is a table of supported languages and adapters (as defined in the adapter.json config file that ships with kak-dap):
+
+| Language             | Adapter  | Dependencies |
+| :------------------: | :------: | :----------: |
+| Python               | debugpy  | Python 3     |
+| C,C++,Rust,Odin,etc. | cpptools | gdb, lldb-mi |
+| Ruby                 | readapt  | Ruby 2-3     |
+
+Any installed adapters can also be uninstalled with the 'dap-uninstall' command.
+
 ### .kak-dap.yaml File
 
-kak-dap requires a file to be present in your project's root directory, named .kak-dap.yaml. This is a standard YAML file. In general,
-it will look like the following:
+kak-dap requires a file to be present in your project's root directory, named .kak-dap.json. This is a standard JSON file, with support
+for C-style single line comments (//comments). In general, it will look like the following:
 
-```yaml
-configurations:
-    <my_config>:
-        adapter: <adapter>
-        launch_args:
-            # This will depend on the debug adapter used.
-    # You can optionally define multiple configs in the same project.
-    <second_config>:
-        adapter: <second_adapter>
-        launch_args:
-            # This will depend on the debug adapter used.
+```json
+{
+"configurations": {
+    <my_config>: {
+        "adapter": <adapter>,
+        "launch_args": {
+            // This will depend on the debug adapter used.
+        }
+    },
+    // You can optionally define multiple configs in the same project.
+    <second_config>: {
+        "adapter": <second_adapter>,
+        "launch_args": {
+            // This will depend on the debug adapter used.
+        }
+    }
+}
 ```
 
-where <my_config> is an arbitrary name for this debug configuration, and <adapter> is the name of an adapter defined in adapter.yaml.
+where <my_config> is an arbitrary name for this debug configuration, and <adapter> is the name of an adapter defined in adapter.json.
 
-For examples of .kak-dap.yaml file configurations, check out the demo/ directory in the repo.
+For examples of .kak-dap.json file configurations, check out the demo/ directory in the repo.
 
 ### Setting breakpoints
 
