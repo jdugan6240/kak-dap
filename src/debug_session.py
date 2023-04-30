@@ -20,6 +20,8 @@ current_session = None
 
 def quit(session):
     logging.debug("Quitting the session...")
+
+    # Quit the Kakoune session
     kak_connection.send_cmd(
         "try %{ eval -client %opt{jumpclient} %{ dap-reset-location  }}"
     )
@@ -137,9 +139,9 @@ def adapter_msg_thread():
 def handle_kak_command(cmd):
     logging.debug(f"Received command: {cmd}")
     if cmd["cmd"] == "stop":
-        # We currently rely on the adapter terminating the debuggee
-        # once stdio streams are closed
-        quit(current_session)
+        # Try to stop the debug adapter
+        # Once the debug adapter quits, we'll quit automatically
+        debug_adapter.write_request("disconnect", {}, lambda *args: None)
     elif cmd["cmd"] == "continue":
         continue_args = {"threadId": stacktrace.cur_thread}
         debug_adapter.write_request("continue", continue_args, lambda *args: None)
