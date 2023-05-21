@@ -33,8 +33,8 @@ def install():
     url = get_correct_url()
     install_dir = adapter_install_dir()
 
-    path = install_dir + "/cpptools.vsix"
-    dest = install_dir + "/cpptools"
+    path = install_dir + "/vscode-cpptools.vsix"
+    dest = install_dir + "/vscode-cpptools"
 
     print("Downloading vsix...")
     download_file(url, path)
@@ -65,10 +65,10 @@ def install():
 
 
 def uninstall():
-    print("Removing cpptools...")
+    print("Removing vscode-cpptools...")
 
     install_dir = adapter_install_dir()
-    path = install_dir + "/cpptools"
+    path = install_dir + "/vscode-cpptools"
 
     shutil.rmtree(path, ignore_errors=True)
 

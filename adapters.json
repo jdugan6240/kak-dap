@@ -3,19 +3,12 @@
         "debugpy": {
             "executable": "python",
             "args": [
-                "-m",
-                "debugpy.adapter"
+                "${ADAPTER_DIR}/debugpy/debugpy-1.6.7/build/lib/debugpy/adapter"
             ]
         },
-        "readapt": {
-            "executable": "readapt",
-            "args": [
-                "stdio"
-            ]
-        },
-        "cpptools": {
+        "vscode-cpptools": {
             "name": "cppdbg",
-            "executable": "${ADAPTER_DIR}/cpptools/extension/debugAdapters/bin/OpenDebugAD7",
+            "executable": "${ADAPTER_DIR}/vscode-cpptools/extension/debugAdapters/bin/OpenDebugAD7",
             "args": []
         }
     }

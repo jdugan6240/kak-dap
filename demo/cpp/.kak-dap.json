@@ -1,7 +1,7 @@
 {
     "configurations": {
         "test_gdb": {
-            "adapter": "cpptools",
+            "adapter": "vscode-cpptools",
             "launch_args": {
                 "program": "${CUR_DIR}/test_c",
                 "args": [],
@@ -23,7 +23,7 @@
             }
         },
         "test_lldb": {
-            "adapter": "cpptools",
+            "adapter": "vscode-cpptools",
             "launch_args": {
                 "program": "${CUR_DIR}/test_c",
                 "args": [],

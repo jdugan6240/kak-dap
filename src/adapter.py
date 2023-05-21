@@ -42,8 +42,8 @@ def reader_thread(rfile, q):
                 data = b""
 
 
-def stderr_thread(rfile, q):
-    while rfile.closed:
+def stderr_thread(rfile):
+    while not rfile.closed:
         line = rfile.readline()
         logging.error(f"From debug adapter: {line}")
 
@@ -103,9 +103,10 @@ class Adapter(object):
         self._adapter_output = AdapterOutput(self._adapter_process.stdout)
         self._adapter_output._process.start()
         self._adapter_input = AdapterInput(self._adapter_process.stdin)
-        # self._stderr_process = Process(
-        #    target=stderr_thread, args=(self._adapter_process.stderr)
-        # )
+        #self._stderr_process = Process(
+        #   target=stderr_thread, args=(self._adapter_process.stderr)
+        #)
+        #self._stderr_process.start()
 
     def write_request(self, cmd, args, callback):
         msg = {
