@@ -1,20 +1,14 @@
 import errno
-import json
+import ujson as json
 import logging
 import os
 from pathlib import Path
+from schema import Optional, Schema, SchemaError
 import socket
 import sys
-import xdg_utils as xdg
+import xdg_base_dirs as xdg
 
-
-def validate_kak_command(cmd):
-    # Command must have a cmd value
-    if "cmd" not in cmd.keys():
-        logging.error("Command must have 'cmd' value")
-        return False
-    return True
-
+kak_schema = Schema({"cmd": str, Optional("args"): {str: object}})
 
 
 class KakConnection:
@@ -47,10 +41,14 @@ class KakConnection:
                     break
                 result_str += data
         # Ensure message is kosher
+        logging.debug(f"Data from Kakoune: {result_str}")
         result_msg = json.loads(result_str)
-        if validate_kak_command(result_msg):
-            return result_msg
-        return None
+        try:
+            kak_schema.validate(result_msg)
+        except SchemaError as e:
+            logging.error(f"Error validating command: {e}")
+            return None
+        return result_msg
 
     def cleanup(self) -> None:
         """
@@ -109,7 +107,7 @@ class KakConnection:
             tmpdir = os.environ.get("TMPDIR", "/tmp")
             session_path = tmpdir + f'/kakoune-{os.environ["USER"]}/{session}'
         else:
-            session_path = xdg_runtime_dir + f"/kakoune/{session}"
+            session_path = xdg_runtime_dir.as_posix() + f"/kakoune/{session}"
         return session_path
 
     @staticmethod
@@ -122,8 +120,9 @@ class KakConnection:
         # can be undefined. Therefore, as a backup, we use the ~/.kak-dap/
         # directory.
         fifo_path = Path.home() / ".kak-dap"
-        if xdg.xdg_runtime_dir() is not None:
-            fifo_path = Path(xdg.xdg_runtime_dir() + "/kak-dap")
+        runtime_dir = xdg.xdg_runtime_dir()
+        if runtime_dir is not None:
+            fifo_path = Path(runtime_dir.as_posix() + "/kak-dap")
         if not fifo_path.exists():
             fifo_path.mkdir()
         return fifo_path.as_posix() + f"/{session}.fifo"

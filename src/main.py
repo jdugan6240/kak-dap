@@ -4,7 +4,6 @@ from kakoune import KakConnection
 import logging
 import os
 import sys
-import xdg
 
 
 class StreamToLogger:

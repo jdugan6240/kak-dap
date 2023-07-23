@@ -1,9 +1,11 @@
 # This option indicates the kak-dap source directory.
-decl -hidden str dap_dir %sh{echo $(dirname $kak_source)/../src}
+decl -hidden str dap_dir %sh{echo $(dirname $kak_source)/../}
 # This option dictates the command run to run the kak-dap binary.
-decl -hidden str dap_cmd "python %opt{dap_dir}/main.py -s %val{session}"
+decl -hidden str dap_cmd "%opt{dap_dir}/run_in_venv.sh  %opt{dap_dir}/src/main.py -s %val{session}"
 # This option indicates whether the kak-dap server for this session is running.
 decl -hidden bool dap_running false
+# This option contains the path of the kak-dap socket for this session.
+decl -hidden str dap_socket ""
 
 # This option indicates the client in which the "stacktrace" buffer will be shown
 decl str stacktraceclient
@@ -136,7 +138,7 @@ define-command dap-stop %{
     nop %sh{
         printf '{
         "cmd": "stop"
-        }' | eval "${kak_opt_dap_cmd} --request"
+        }' > $kak_opt_dap_socket
     }
 }
 
@@ -175,7 +177,7 @@ define-command dap-toggle-breakpoint %{ eval %sh{
 define-command dap-install -params 1 -shell-script-candidates %{
     files=$(ls $kak_opt_dap_dir/../installers)
     for file in $files; do
-        if [ -f "${kak_opt_dap_dir}/../installers/${file}" ]; then
+        if [ -f "${kak_opt_dap_dir}/installers/${file}" ]; then
             printf "%s\n" "${file%.*}"
         fi
     done
@@ -185,7 +187,7 @@ define-command dap-install -params 1 -shell-script-candidates %{
         mkfifo ${output}
 
         ( {
-            python -u "${kak_opt_dap_dir}/../installers/${1}.py"
+            python -u "${kak_opt_dap_dir}/installers/${1}.py"
             printf "Done. Press <esc> to exit.\n"
         } > "$output" 2>&1 & ) > /dev/null 2>&1 < /dev/null
 
@@ -201,7 +203,7 @@ define-command dap-install -params 1 -shell-script-candidates %{
 define-command dap-uninstall -params 1 -shell-script-candidates %{
     files=$(ls $kak_opt_dap_dir/../installers)
     for file in $files; do
-        if [ -f "${kak_opt_dap_dir}/../installers/${file}" ]; then
+        if [ -f "${kak_opt_dap_dir}/installers/${file}" ]; then
             printf "%s\n" "${file%.*}"
         fi
     done
@@ -211,7 +213,7 @@ define-command dap-uninstall -params 1 -shell-script-candidates %{
         mkfifo "$output"
 
         ( {
-            python -u "${kak_opt_dap_dir}/../installers/${1}.py" "uninstall"
+            python -u "${kak_opt_dap_dir}/installers/${1}.py" "uninstall"
             printf "Done. Press <esc> to exit.\n"
         } > "$output" 2>&1 & ) > /dev/null 2>&1 < /dev/null
 
@@ -232,26 +234,26 @@ define-command dap-continue %{ eval %sh{
     else
         printf '{
         "cmd": "continue" 
-        }' | eval "${kak_opt_dap_cmd} --request" > /dev/null 2>&1
+        }' > $kak_opt_dap_socket
     fi
 }}
 
 define-command dap-next %{ nop %sh{
     printf '{
     "cmd": "next" 
-    }' | eval "${kak_opt_dap_cmd} --request"
+    }' > $kak_opt_dap_socket
 }}
 
 define-command dap-step-in %{ nop %sh{
     printf '{
     "cmd": "stepIn" 
-    }' | eval "${kak_opt_dap_cmd} --request"
+    }' > $kak_opt_dap_socket
 }}
 
 define-command dap-step-out %{ nop %sh{
     printf '{
     "cmd": "stepOut" 
-    }' | eval "${kak_opt_dap_cmd} --request"
+    }' > $kak_opt_dap_socket
 }}
 
 define-command dap-evaluate -params 1 %{ nop %sh{
@@ -260,7 +262,7 @@ define-command dap-evaluate -params 1 %{ nop %sh{
     "args": {
     "expression": "%s"
     }
-    }' "$1" | eval "${kak_opt_dap_cmd} --request"
+    }' "$1" > $kak_opt_dap_socket
 }}
 
 #
@@ -274,7 +276,7 @@ define-command dap-select-config -params 2.. %{
             command=$command"$config "
             config_cmd=$(printf '{"cmd": "select-config", "args": {"config": "%s"}}' "$config")
             printf "%s\n" "echo -debug $config_cmd"
-            command=$command"%{ nop %sh{ printf '%s\n' '$config_cmd' | eval '${kak_opt_dap_cmd} --request' } } "
+            command=$command"%{ nop %sh{ printf '%s' '$config_cmd' > $kak_opt_dap_socket } } "
         done
         printf "%s\n" "$command"
     }
@@ -386,7 +388,7 @@ define-command -hidden dap-expand-variable %{
             "args": {
             "line": "%s"
             }
-            }' $value | eval "${kak_opt_dap_cmd} --request"
+            }' $value > $kak_opt_dap_socket
         }
     }
 }
@@ -426,7 +428,7 @@ define-command -hidden dap-run-in-terminal -params 1.. %{
     nop %sh{
         printf '{
         "cmd": "pid"
-        }' | eval "${kak_opt_dap_cmd} --request"
+        }' > $kak_opt_dap_socket
     }
 }
 

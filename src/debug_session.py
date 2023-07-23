@@ -180,6 +180,11 @@ def start(session):
 
     kak_connection = KakConnection(session)
 
+
+    kak_connection.send_cmd(
+        f'set-option global dap_socket "{kak_connection.in_fifo_path}"'
+    )
+
     # Get configurations
     adapter_config = config.get_adapter_config()
     if adapter_config is None:

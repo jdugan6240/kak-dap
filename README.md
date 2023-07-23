@@ -23,7 +23,7 @@ When finished, it will work drastically differently from kak-dap 1.1.
 
 ### Requirements
 
-kak-dap requires Python 3.7 or later. No other dependencies apart from Kakoune are required.
+kak-dap requires Python 3.8 or later. No other dependencies apart from Kakoune are required.
 
 ### Optional requirements
 
@@ -36,7 +36,7 @@ https://github.com/rzeigler/wezterm.kak
 If using `plug.kak` as your plugin manager, add the following to your kakrc:
 
 ```
-plug "https://git.sr.ht/~jdugan6240/kak-dap"
+plug "https://github.com/jdugan6240/kak-dap"
 ```
 
 ### kak-bundle
@@ -45,7 +45,7 @@ If using `kak-bundle` as your plugin manager, add the following to your kakrc
 (requires the `big-rewrite` branch of `kak-bundle`:
 
 ```
-bundle kak-dap "https://git.sr.ht/~jdugan6240/kak-dap"
+bundle kak-dap "https://github.com/jdugan6240/kak-dap"
 ```
 
 ### cork.kak
@@ -53,7 +53,7 @@ bundle kak-dap "https://git.sr.ht/~jdugan6240/kak-dap"
 If using `cork.kak` as your plugin manager, add the following to your kakrc:
 
 ```
-cork kak-dap "https://git.sr.ht/~jdugan6240/kak-dap"
+cork kak-dap "https://gitgub.com/jdugan6240/kak-dap"
 ```
 
 ### Manual
@@ -61,7 +61,7 @@ cork kak-dap "https://git.sr.ht/~jdugan6240/kak-dap"
 If not using a plugion manager, clone the repository anywhere on your system:
 
 ```
-git clone https://git.sr.ht/~jdugan6240/kak-dap
+git clone https://github.com/jdugan6240/kak-dap
 ```
 
 Then, add the following to your kakrc:
@@ -81,41 +81,34 @@ An (old) demo of `kak-dap` can be found here: [![asciicast](https://asciinema.or
 Before any debugging can happen, the adapter you need must be installed. kak-dap provides a means of installing these with the 'dap-install'
 command. Here is a table of supported languages and adapters (as defined in the adapter.json config file that ships with kak-dap):
 
-| Language             | Adapter  | Dependencies |
-| :------------------: | :------: | :----------: |
-| Python               | debugpy  | Python 3     |
-| C,C++,Rust,Odin,etc. | cpptools | gdb, lldb-mi |
-| Ruby                 | readapt  | Ruby 2-3     |
+| Language             | Adapter         | Dependencies |
+| :------------------: | :-------------: | :----------: |
+| Python               | debugpy         | Python 3     |
+| C,C++,Rust,Odin,etc. | vscode-cpptools | gdb, lldb-mi |
 
 Any installed adapters can also be uninstalled with the 'dap-uninstall' command.
 
 ### .kak-dap.yaml File
 
-kak-dap requires a file to be present in your project's root directory, named .kak-dap.json. This is a standard JSON file, with support
+kak-dap requires a file to be present in your project's root directory, named .kak-dap.yaml. This is a standard JSON file, with support
 for C-style single line comments (//comments). In general, it will look like the following:
 
-```json
-{
-"configurations": {
-    <my_config>: {
-        "adapter": <adapter>,
-        "launch_args": {
-            // This will depend on the debug adapter used.
-        }
-    },
-    // You can optionally define multiple configs in the same project.
-    <second_config>: {
-        "adapter": <second_adapter>,
-        "launch_args": {
-            // This will depend on the debug adapter used.
-        }
-    }
-}
+```yaml
+configurations:
+  <my_config>:
+    adapter: <adapter>
+    launch_args:
+      # This will depend on the debug adapter used.
+  # You can optionally define multiple configs in the same project.
+  <second_config>:
+    adapter: <second_adapter>
+    launch_args:
+      # This will depend on the debug adapter used.
 ```
 
 where <my_config> is an arbitrary name for this debug configuration, and <adapter> is the name of an adapter defined in adapter.json.
 
-For examples of .kak-dap.json file configurations, check out the demo/ directory in the repo.
+For examples of .kak-dap.yaml file configurations, check out the demo/ directory in the repo.
 
 ### Setting breakpoints
 
@@ -204,6 +197,6 @@ kak-dap is licensed under the BSD 0-Clause License.
 
 ## Contributors
 
-James Dugan (https://codeberg.org/jdugan6240)
+James Dugan (https://github.com/jdugan6240)
 
 in0ni (https://github.com/in0ni)

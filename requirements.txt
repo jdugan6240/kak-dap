@@ -1,0 +1,4 @@
+pyyaml
+schema
+ujson
+xdg-base-dirs
