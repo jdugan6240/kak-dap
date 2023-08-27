@@ -23,11 +23,14 @@ When finished, it will work drastically differently from kak-dap 1.1.
 
 ### Requirements
 
-kak-dap requires Python 3.8 or later. No other dependencies apart from Kakoune are required.
+kak-dap requires Python 3.10 or later. You also need to have [Poetry](https://python-poetry.org/docs/) installed.
 
 ### Optional requirements
 
-For WezTerm support, install the following plugin:
+If your Kakoune installation is newer than the commit [dad128e4a6c258983e820039c95e6d92998fd1bc](https://github.com/mawww/kakoune/commit/dad128e4a6c258983e820039c95e6d92998fd1bc) (which was
+merged before the 2023.08.08 release), then WezTerm support should work out of the box.
+
+For older versions of Kakoune, install the following plugin:
 
 https://github.com/rzeigler/wezterm.kak
 
@@ -35,8 +38,11 @@ https://github.com/rzeigler/wezterm.kak
 
 If using `plug.kak` as your plugin manager, add the following to your kakrc:
 
-```
-plug "https://github.com/jdugan6240/kak-dap"
+```kak
+plug "https://github.com/jdugan6240/kak-dap" do %{
+    poetry env use python3.10 # Only do this if your default Python version is older than 3.10
+    poetry install --without dev
+}"
 ```
 
 ### kak-bundle
@@ -44,24 +50,28 @@ plug "https://github.com/jdugan6240/kak-dap"
 If using `kak-bundle` as your plugin manager, add the following to your kakrc
 (requires the `big-rewrite` branch of `kak-bundle`:
 
-```
-bundle kak-dap "https://github.com/jdugan6240/kak-dap"
-```
-
-### cork.kak
-
-If using `cork.kak` as your plugin manager, add the following to your kakrc:
-
-```
-cork kak-dap "https://gitgub.com/jdugan6240/kak-dap"
+```kak
+bundle kak-dap "https://github.com/jdugan6240/kak-dap" %{
+	# Configuration here...
+} %{
+    poetry env use python3.10 # Only do this if your default Python version is older than 3.10
+    poetry install --without dev
+}
 ```
 
 ### Manual
 
-If not using a plugion manager, clone the repository anywhere on your system:
+If not using a plugin manager, clone the repository anywhere on your system:
 
 ```
 git clone https://github.com/jdugan6240/kak-dap
+```
+
+Navigate to the repository, and execute the following commands:
+
+```sh
+poetry env use python3.10 # Only do this if your default Python version is older than 3.10
+poetry install --without dev
 ```
 
 Then, add the following to your kakrc:
@@ -90,8 +100,8 @@ Any installed adapters can also be uninstalled with the 'dap-uninstall' command.
 
 ### .kak-dap.yaml File
 
-kak-dap requires a file to be present in your project's root directory, named .kak-dap.yaml. This is a standard JSON file, with support
-for C-style single line comments (//comments). In general, it will look like the following:
+kak-dap requires a file to be present in your project's root directory, named .kak-dap.yaml. This is a standard YAML file, and in general,
+it will look like the following:
 
 ```yaml
 configurations:
@@ -172,7 +182,7 @@ map global user x -docstring 'dap' ': enter-user-mode dap<ret>'
 logging can be enabled by inserting the following command in your kakrc:
 
 ```
-set global dap_cmd "python %opt{dap_dir}/main.py -s %val{session} -l /tmp/kak-dap.log -vvvvv"
+set global dap_args "-l /tmp/kak-dap.log -vvvvv"
 ```
 
 This will cause `kak-dap` to create a debug log located at /tmp/kak-dap.log.

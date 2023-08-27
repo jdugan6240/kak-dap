@@ -1,7 +1,9 @@
 # This option indicates the kak-dap source directory.
 decl -hidden str dap_dir %sh{echo $(dirname $kak_source)/../}
+# This option indicates the arguments passed to the kak-dap server.
+decl -hidden str dap_args ""
 # This option dictates the command run to run the kak-dap binary.
-decl -hidden str dap_cmd "%opt{dap_dir}/run_in_venv.sh  %opt{dap_dir}/src/main.py -s %val{session}"
+#decl -hidden str dap_cmd "poetry run python %opt{dap_dir}/src/main.py -s %val{session}"
 # This option indicates whether the kak-dap server for this session is running.
 decl -hidden bool dap_running false
 # This option contains the path of the kak-dap socket for this session.
@@ -124,9 +126,9 @@ define-command dap-start %{
             # Setup the UI
             printf "%s\n" "dap-setup-ui"
 
-            printf "echo -debug %s\n" "%opt{dap_cmd}"
+            #printf "echo -debug %s\n" "%opt{dap_cmd}"
             # Start the kak-dap binary
-            (eval "${kak_opt_dap_cmd}") > /dev/null 2>&1 < /dev/null &
+            (eval "poetry run python $kak_opt_dap_dir/src/main.py -s $kak_session $kak_opt_dap_args") > /dev/null 2>&1 < /dev/null &
         else
             printf "echo %s\n" "kak-dap already running"
         fi
@@ -187,7 +189,7 @@ define-command dap-install -params 1 -shell-script-candidates %{
         mkfifo ${output}
 
         ( {
-            python -u "${kak_opt_dap_dir}/installers/${1}.py"
+            poetry run python -u "${kak_opt_dap_dir}/installers/${1}.py"
             printf "Done. Press <esc> to exit.\n"
         } > "$output" 2>&1 & ) > /dev/null 2>&1 < /dev/null
 
@@ -213,7 +215,7 @@ define-command dap-uninstall -params 1 -shell-script-candidates %{
         mkfifo "$output"
 
         ( {
-            python -u "${kak_opt_dap_dir}/installers/${1}.py" "uninstall"
+            poetry run python -u "${kak_opt_dap_dir}/installers/${1}.py" "uninstall"
             printf "Done. Press <esc> to exit.\n"
         } > "$output" 2>&1 & ) > /dev/null 2>&1 < /dev/null
 

@@ -1,7 +1,7 @@
 ## Unreleased
 
 Changes:
-- Complete rewrite in Python
+- Complete rewrite in Python, using Poetry for dependency management
 - Adapters now defined in adapters.json in repo or ~/.config/kak-dap/adapters.json
 - kak-dap will now attempt to detect which windowing system is being used for layout purposes
 
@@ -17,7 +17,7 @@ Additions:
 Bug Fixes:
 - Logging to file would occasionally produce binary (aka unreadable) output
 - Expanding/collapsing variables no longer causes cursor to jump to line 1
-- Non-expandable variables no longer show as expandable
+- Non-expandable variables no longer show as expandable if they appear after an expandable variable
 
 ## 1.1.0 - 2022-03-22
 

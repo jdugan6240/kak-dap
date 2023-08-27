@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "kak-dap"
+version = "2.0.0"
+description = "Debug Adapter Protocol client for Kakoune."
+authors = ["James Dugan <jdugan6240@vivaldi.net>"]
+license = "0BSD"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyyaml = "^6.0.0"
+schema = "^0.7.5"
+ujson = "^5.8.0"
+xdg-base-dirs = "^6.0.0"
+
+[tool.poetry.group.dev.dependencies]
+# python-lsp-server
+python-lsp-server = "*"
+pylsp-mypy = "*"
+python-lsp-black = "*"
+pyls-isort = "*"
+pylsp-rope = "*"
+python-lsp-ruff = "*"
+
+# Type stub packages for mypy
+types-PyYAML = "^6.0.0"
+types-ujson = "^5.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
