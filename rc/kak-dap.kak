@@ -177,7 +177,7 @@ define-command dap-toggle-breakpoint %{ eval %sh{
 }}
 
 define-command dap-install -params 1 -shell-script-candidates %{
-    files=$(ls $kak_opt_dap_dir/../installers)
+    files=$(ls $kak_opt_dap_dir/installers)
     for file in $files; do
         if [ -f "${kak_opt_dap_dir}/installers/${file}" ]; then
             printf "%s\n" "${file%.*}"
@@ -203,7 +203,7 @@ define-command dap-install -params 1 -shell-script-candidates %{
 
 
 define-command dap-uninstall -params 1 -shell-script-candidates %{
-    files=$(ls $kak_opt_dap_dir/../installers)
+    files=$(ls $kak_opt_dap_dir/installers)
     for file in $files; do
         if [ -f "${kak_opt_dap_dir}/installers/${file}" ]; then
             printf "%s\n" "${file%.*}"
