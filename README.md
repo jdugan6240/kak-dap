@@ -1,3 +1,9 @@
+# NO LONGER MAINTAINED
+
+`kak-dap` was a fun experiment to test how well a debug UI could be mimicked with Kakoune buffers, but its design is sadly
+flawed. A replacement plugin is in development at https://codeberg.org/jdugan6240/kak-debug.
+
+
 # Kakoune Debug Adapter Protocol Client
 
 kak-dap is a [Debug Adapter Protocol](https://microsoft.github.io/debug-adapter-protocol/) client for [Kakoune](http://kakoune.org) implemented in [Rust](https://www.rust-lang.org).
