@@ -1,8 +1,6 @@
-# NO LONGER MAINTAINED
+# Attention
 
-`kak-dap` was a fun experiment to test how well a debug UI could be mimicked with Kakoune buffers, but its design is sadly
-flawed. A replacement plugin is in development at https://codeberg.org/jdugan6240/kak-debug.
-
+`kak-dap` is undergoing a complete rewrite for 2.0. For the original version, use commit `355df2c627ceb124f4ff018c95762cf9c19068ae`.
 
 # Kakoune Debug Adapter Protocol Client
 
